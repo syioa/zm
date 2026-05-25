@@ -1,71 +1,275 @@
-const std = @import("std");
-const Io = std.Io;
-
 const zm = @import("zm");
 
-pub fn main(init: std.process.Init) !void {
-    // Prints to stderr, unbuffered, ignoring potential errors.
-    std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
+const std = @import("std");
 
-    // This is appropriate for anything that lives as long as the process.
-    const arena: std.mem.Allocator = init.arena.allocator();
+// ============================================================
+// 1. TOKENIZER (LEXER) - Unchanged, perfectly Zero-Copy
+// ============================================================
 
-    // Accessing command line arguments:
-    const args = try init.minimal.args.toSlice(arena);
-    for (args) |arg| {
-        std.log.info("arg: {s}", .{arg});
+pub const TokenType = enum {
+    h1,
+    h2,
+    bold_marker,
+    newline,
+    text,
+};
+
+pub const Token = struct {
+    type: TokenType,
+    slice: []const u8,
+};
+
+pub const Tokenizer = struct {
+    input: []const u8,
+    index: usize = 0,
+
+    pub fn next(self: *Tokenizer) ?Token {
+        if (self.index >= self.input.len) return null;
+
+        const start = self.index;
+        const char = self.input[self.index];
+
+        if (char == '\n') {
+            self.index += 1;
+            return Token{ .type = .newline, .slice = self.input[start..self.index] };
+        }
+
+        if (char == '*' and self.peek(1) == '*') {
+            self.index += 2;
+            return Token{ .type = .bold_marker, .slice = self.input[start..self.index] };
+        }
+
+        if (char == '#' and self.peek(1) == '#' and self.peek(2) == ' ') {
+            self.index += 3;
+            return Token{ .type = .h2, .slice = self.input[start..self.index] };
+        }
+        if (char == '#' and self.peek(1) == ' ') {
+            self.index += 2;
+            return Token{ .type = .h1, .slice = self.input[start..self.index] };
+        }
+
+        // Text fallback
+        while (self.index < self.input.len) {
+            const c = self.input[self.index];
+            if (c == '\n') break;
+            if (c == '*' and self.peek(1) == '*') break;
+            if (c == '#' and ((self.peek(1) == ' ') or (self.peek(1) == '#' and self.peek(2) == ' '))) break;
+            self.index += 1;
+        }
+
+        if (self.index == start) self.index += 1; // Prevent infinite loops
+
+        return Token{ .type = .text, .slice = self.input[start..self.index] };
     }
 
-    // In order to do I/O operations need an `Io` instance.
-    const io = init.io;
+    fn peek(self: *Tokenizer, offset: usize) u8 {
+        const target_index = self.index + offset;
+        if (target_index >= self.input.len) return 0;
+        return self.input[target_index];
+    }
+};
 
-    // Stdout is for the actual output of your application, for example if you
-    // are implementing gzip, then only the compressed bytes should be sent to
-    // stdout, not any debugging messages.
-    var stdout_buffer: [1024]u8 = undefined;
-    var stdout_file_writer: Io.File.Writer = .init(.stdout(), io, &stdout_buffer);
-    const stdout_writer = &stdout_file_writer.interface;
+// ============================================================
+// 2. ABSTRACT SYNTAX TREE (DOD Flattened)
+// Nodes are just data. No pointers. Children are indices.
+// ============================================================
 
-    try zm.printAnotherMessage(stdout_writer);
+pub const NodeTag = enum {
+    document,
+    heading,
+    paragraph,
+    text,
+    bold,
+};
 
-    try stdout_writer.flush(); // Don't forget to flush!
-}
+pub const Node = struct {
+    tag: NodeTag,
+    
+    // DOD Child Tracking: 
+    // If a node has children, they are located in the flat array 
+    // starting at `first_child` and spanning `num_children` elements.
+    first_child: u32 = std.math.maxInt(u32), // Sentinel value meaning "no children"
+    num_children: u32 = 0,
 
-test "simple test" {
-    const gpa = std.testing.allocator;
-    var list: std.ArrayList(i32) = .empty;
-    defer list.deinit(gpa); // Try commenting this out and see if zig detects the memory leak!
-    try list.append(gpa, 42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
-}
+    // Payload remains a tagged union to keep memory footprint strictly bound to what the node actually is.
+    payload: Payload,
 
-test "fuzz example" {
-    try std.testing.fuzz({}, testOne, .{});
-}
-
-fn testOne(context: void, smith: *std.testing.Smith) !void {
-    _ = context;
-    // Try passing `--fuzz` to `zig build test` and see if it manages to fail this test case!
-
-    const gpa = std.testing.allocator;
-    var list: std.ArrayList(u8) = .empty;
-    defer list.deinit(gpa);
-    while (!smith.eos()) switch (smith.value(enum { add_data, dup_data })) {
-        .add_data => {
-            const slice = try list.addManyAsSlice(gpa, smith.value(u4));
-            smith.bytes(slice);
-        },
-        .dup_data => {
-            if (list.items.len == 0) continue;
-            if (list.items.len > std.math.maxInt(u32)) return error.SkipZigTest;
-            const len = smith.valueRangeAtMost(u32, 1, @min(32, list.items.len));
-            const off = smith.valueRangeAtMost(u32, 0, @intCast(list.items.len - len));
-            try list.appendSlice(gpa, list.items[off..][0..len]);
-            try std.testing.expectEqualSlices(
-                u8,
-                list.items[off..][0..len],
-                list.items[list.items.len - len ..],
-            );
-        },
+    const Payload = union(NodeTag) {
+        document: void,
+        heading: struct { level: u8 },
+        paragraph: void,
+        text: struct { value: []const u8 },
+        bold: void,
     };
+};
+
+// ============================================================
+// 3. PARSER (Data-Oriented)
+// Appends nodes to a flat array. Returns indices (u32) instead of pointers.
+// ============================================================
+
+pub const Parser = struct {
+    allocator: std.mem.Allocator,
+    tokens: []Token,
+    // The single contiguous array backing the entire tree
+    nodes: std.ArrayList(Node),
+    index: usize = 0,
+
+    pub fn parse(self: *Parser) !u32 {
+        // The root node is always the first element in our flat array
+        const root_idx = try self.appendNode(.{ .tag = .document, .payload = .document });
+
+        const children_start_idx = self.nodes.items.len;
+
+        while (self.index < self.tokens.len) {
+            const token = self.tokens[self.index];
+            switch (token.type) {
+                .h1 => _ = try self.parseHeading(1),
+                .h2 => _ = try self.parseHeading(2),
+                .newline => self.index += 1,
+                .text, .bold_marker => _ = try self.parseParagraph(),
+            }
+        }
+
+        // Bind the root node's children to everything parsed after it
+        self.bindChildren(root_idx, children_start_idx);
+
+        return root_idx;
+    }
+
+    fn parseHeading(self: *Parser, level: u8) !u32 {
+        self.index += 1; // Consume heading token
+        const node_idx = try self.appendNode(.{ .tag = .heading, .payload = .{ .heading = .{ .level = level } } });
+        
+        const children_start_idx = self.nodes.items.len;
+
+        while (self.index < self.tokens.len and self.tokens[self.index].type != .newline) {
+            _ = try self.parseInline();
+        }
+        if (self.index < self.tokens.len) self.index += 1; // Consume newline
+
+        self.bindChildren(node_idx, children_start_idx);
+        return node_idx;
+    }
+
+    fn parseParagraph(self: *Parser) !u32 {
+        const node_idx = try self.appendNode(.{ .tag = .paragraph, .payload = .paragraph });
+        
+        const children_start_idx = self.nodes.items.len;
+
+        while (self.index < self.tokens.len) {
+            const t = self.tokens[self.index];
+            if (t.type == .newline or t.type == .h1 or t.type == .h2) break;
+            _ = try self.parseInline();
+        }
+        
+        if (self.index < self.tokens.len and self.tokens[self.index].type == .newline) {
+            self.index += 1;
+        }
+
+        self.bindChildren(node_idx, children_start_idx);
+        return node_idx;
+    }
+
+    fn parseInline(self: *Parser) !u32 {
+        const token = self.tokens[self.index];
+        switch (token.type) {
+            .text => {
+                self.index += 1;
+                return self.appendNode(.{ .tag = .text, .payload = .{ .text = .{ .value = token.slice } } });
+            },
+            .bold_marker => {
+                self.index += 1; // Consume opening '**'
+                const node_idx = try self.appendNode(.{ .tag = .bold, .payload = .bold });
+                
+                const children_start_idx = self.nodes.items.len;
+
+                while (self.index < self.tokens.len and self.tokens[self.index].type != .bold_marker) {
+                    _ = try self.parseInline();
+                }
+                
+                if (self.index < self.tokens.len and self.tokens[self.index].type == .bold_marker) {
+                    self.index += 1; // Consume closing '**'
+                }
+
+                self.bindChildren(node_idx, children_start_idx);
+                return node_idx;
+            },
+            else => unreachable,
+        }
+    }
+
+    // --- DOD Helper Methods ---
+
+    // Appends a node to the contiguous array and returns its index
+    fn appendNode(self: *Parser, node: Node) !u32 {
+        const idx: u32 = @intCast(self.nodes.items.len);
+        try self.nodes.append(self.*.allocator, node);
+        return idx;
+    }
+
+    // Updates a node in-place to point to the range of nodes that represent its children
+    fn bindChildren(self: *Parser, parent_idx: u32, start_idx: usize) void {
+        const end_idx = self.nodes.items.len;
+        if (end_idx > start_idx) {
+            var parent = &self.nodes.items[parent_idx];
+            parent.first_child = @intCast(start_idx);
+            parent.num_children = @intCast(end_idx - start_idx);
+        }
+    }
+};
+
+// ============================================================
+// 4. AST PRINTER (DOD Traversal)
+// Traverses using simple array indexing instead of pointer dereferencing.
+// ============================================================
+
+fn printAST(nodes: []const Node) void {
+    var id: u32 = 0;
+    while (id < nodes.len) {
+        if (nodes[id].tag == .heading) {
+            std.debug.print("Node id: {}\n    {s}\n", .{id, nodes[nodes[id].first_child].payload.text.value});
+        }
+        id += 1;
+    }
+}
+
+// ============================================================
+// 5. MAIN
+// ============================================================
+
+pub fn main() !void {
+    const source =
+        \\# Hello World
+        \\This is a paragraph with **bold text** inside it.
+        \\
+        \\## Subheading
+        \\More text.
+        ;
+
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+
+    // 1. Tokenize
+    var tokenizer = Tokenizer{ .input = source };
+    var token_list = try std.ArrayList(Token).initCapacity(allocator, 10);
+    while (tokenizer.next()) |token| {
+        try token_list.append(allocator, token);
+    }
+
+    // 2. Parse into DOD Flat Array
+    var parser = Parser{
+        .allocator = allocator,
+        .tokens = token_list.items,
+        .nodes = try std.ArrayList(Node).initCapacity(allocator, 10),
+    };
+    
+    // root_idx is just a u32 pointing to index 0
+    const root_idx = try parser.parse();
+    _ = root_idx;
+
+    // 3. Print via DOD Traversal
+    // We just pass the underlying slice of the ArrayList and the root index
+    printAST(parser.nodes.items);
 }
