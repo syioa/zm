@@ -84,23 +84,25 @@ pub const NodeTag = enum {
 
 pub const Node = struct {
     tag: NodeTag,
-    
-    // DOD Child Tracking: 
-    // If a node has children, they are located in the flat array 
+
+    // DOD Child Tracking:
+    // If a node has children, they are located in the flat array
     // starting at `first_child` and spanning `num_children` elements.
     first_child: u32 = std.math.maxInt(u32), // Sentinel value meaning "no children"
     num_children: u32 = 0,
 
-    // Payload remains a tagged union to keep memory footprint strictly bound to what the node actually is.
-    payload: Payload,
+    // Payload is an index to special properties of current Node
+    payload: ?u32,
 
-    const Payload = union(NodeTag) {
-        document: void,
-        heading: struct { level: u8 },
-        paragraph: void,
-        text: struct { value: []const u8 },
-        bold: void,
+    const Document = void;
+    const heading = struct {
+        level: u8,
     };
+    const paragraph = void;
+    const text = struct {
+        value: []const u8,
+    };
+    const bold = void;
 };
 
 // ============================================================
@@ -115,9 +117,12 @@ pub const Parser = struct {
     nodes: std.ArrayList(Node),
     index: usize = 0,
 
+    heading_payload: std.ArrayList(Node.heading),
+    text_payload: std.ArrayList(Node.text),
+
     pub fn parse(self: *Parser) !u32 {
         // The root node is always the first element in our flat array
-        const root_idx = try self.appendNode(.{ .tag = .document, .payload = .document });
+        const root_idx = try self.appendNode(.{ .tag = .document, .payload = null });
 
         const children_start_idx = self.nodes.items.len;
 
@@ -139,8 +144,9 @@ pub const Parser = struct {
 
     fn parseHeading(self: *Parser, level: u8) !u32 {
         self.index += 1; // Consume heading token
-        const node_idx = try self.appendNode(.{ .tag = .heading, .payload = .{ .heading = .{ .level = level } } });
-        
+        const payload_idx = try self.appendHeadingPayload(.{ .level = level });
+        const node_idx = try self.appendNode(.{ .tag = .heading, .payload = payload_idx });
+
         const children_start_idx = self.nodes.items.len;
 
         while (self.index < self.tokens.len and self.tokens[self.index].type != .newline) {
@@ -153,8 +159,8 @@ pub const Parser = struct {
     }
 
     fn parseParagraph(self: *Parser) !u32 {
-        const node_idx = try self.appendNode(.{ .tag = .paragraph, .payload = .paragraph });
-        
+        const node_idx = try self.appendNode(.{ .tag = .paragraph, .payload = null });
+
         const children_start_idx = self.nodes.items.len;
 
         while (self.index < self.tokens.len) {
@@ -162,7 +168,7 @@ pub const Parser = struct {
             if (t.type == .newline or t.type == .h1 or t.type == .h2) break;
             _ = try self.parseInline();
         }
-        
+
         if (self.index < self.tokens.len and self.tokens[self.index].type == .newline) {
             self.index += 1;
         }
@@ -176,18 +182,19 @@ pub const Parser = struct {
         switch (token.type) {
             .text => {
                 self.index += 1;
-                return self.appendNode(.{ .tag = .text, .payload = .{ .text = .{ .value = token.slice } } });
+                const payload_idx = try self.appendTextPayload(.{ .value = token.slice });
+                return self.appendNode(.{ .tag = .text, .payload = payload_idx });
             },
             .bold_marker => {
                 self.index += 1; // Consume opening '**'
-                const node_idx = try self.appendNode(.{ .tag = .bold, .payload = .bold });
-                
+                const node_idx = try self.appendNode(.{ .tag = .bold, .payload = null });
+
                 const children_start_idx = self.nodes.items.len;
 
                 while (self.index < self.tokens.len and self.tokens[self.index].type != .bold_marker) {
                     _ = try self.parseInline();
                 }
-                
+
                 if (self.index < self.tokens.len and self.tokens[self.index].type == .bold_marker) {
                     self.index += 1; // Consume closing '**'
                 }
@@ -208,6 +215,18 @@ pub const Parser = struct {
         return idx;
     }
 
+    fn appendHeadingPayload(self: *Parser, payload: Node.heading) !u32 {
+        const idx: u32 = @intCast(self.heading_payload.items.len);
+        try self.heading_payload.append(self.*.allocator, payload);
+        return idx;
+    }
+
+    fn appendTextPayload(self: *Parser, payload: Node.text) !u32 {
+        const idx: u32 = @intCast(self.text_payload.items.len);
+        try self.text_payload.append(self.*.allocator, payload);
+        return idx;
+    }
+
     // Updates a node in-place to point to the range of nodes that represent its children
     fn bindChildren(self: *Parser, parent_idx: u32, start_idx: usize) void {
         const end_idx = self.nodes.items.len;
@@ -224,11 +243,11 @@ pub const Parser = struct {
 // Traverses using simple array indexing instead of pointer dereferencing.
 // ============================================================
 
-fn printAST(nodes: []const Node) void {
+fn printAST(nodes: []const Node, text_payload: []const Node.text) void {
     var id: u32 = 0;
     while (id < nodes.len) {
         if (nodes[id].tag == .heading) {
-            std.debug.print("Node id: {}\n    {s}\n", .{id, nodes[nodes[id].first_child].payload.text.value});
+            std.debug.print("Node id: {}\n    {s}\n", .{ id, text_payload[nodes[nodes[id].first_child].payload.?].value });
         }
         id += 1;
     }
@@ -245,7 +264,7 @@ pub fn main() !void {
         \\
         \\## Subheading
         \\More text.
-        ;
+    ;
 
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
@@ -263,13 +282,15 @@ pub fn main() !void {
         .allocator = allocator,
         .tokens = token_list.items,
         .nodes = try std.ArrayList(Node).initCapacity(allocator, 10),
+        .heading_payload = try std.ArrayList(Node.heading).initCapacity(allocator, 10),
+        .text_payload = try std.ArrayList(Node.text).initCapacity(allocator, 10),
     };
-    
+
     // root_idx is just a u32 pointing to index 0
     const root_idx = try parser.parse();
     _ = root_idx;
 
     // 3. Print via DOD Traversal
     // We just pass the underlying slice of the ArrayList and the root index
-    printAST(parser.nodes.items);
+    printAST(parser.nodes.items, parser.text_payload.items);
 }
