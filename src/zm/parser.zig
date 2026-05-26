@@ -23,6 +23,10 @@ pub const Parser = struct {
             switch (token.type) {
                 .h1 => _ = try self.parseHeading(1),
                 .h2 => _ = try self.parseHeading(2),
+                .h3 => _ = try self.parseHeading(3),
+                .h4 => _ = try self.parseHeading(4),
+                .h5 => _ = try self.parseHeading(5),
+                .h6 => _ = try self.parseHeading(6),
                 .newline => self.index += 1,
                 .text, .bold_marker => _ = try self.parseParagraph(),
             }

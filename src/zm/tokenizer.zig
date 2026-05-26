@@ -1,6 +1,10 @@
 pub const TokenType = enum {
     h1,
     h2,
+    h3,
+    h4,
+    h5,
+    h6,
     bold_marker,
     newline,
     text,
@@ -31,7 +35,39 @@ pub const Tokenizer = struct {
             return Token{ .type = .bold_marker, .slice = self.input[start..self.index] };
         }
 
-        if (self.atLineStart() and char == '#' and self.peek(1) == '#' and self.peek(2) == ' ') {
+        if (self.atLineStart() and char == '#' and
+            self.peek(1) == '#' and self.peek(2) == '#' and
+            self.peek(3) == '#' and self.peek(4) == '#' and
+            self.peek(5) == '#' and self.peek(6) == ' ')
+        {
+            self.index += 7;
+            return Token{ .type = .h6, .slice = self.input[start..self.index] };
+        }
+        if (self.atLineStart() and char == '#' and
+            self.peek(1) == '#' and self.peek(2) == '#' and
+            self.peek(3) == '#' and self.peek(4) == '#' and
+            self.peek(5) == ' ')
+        {
+            self.index += 6;
+            return Token{ .type = .h5, .slice = self.input[start..self.index] };
+        }
+        if (self.atLineStart() and char == '#' and
+            self.peek(1) == '#' and self.peek(2) == '#' and
+            self.peek(3) == '#' and self.peek(4) == ' ')
+        {
+            self.index += 5;
+            return Token{ .type = .h4, .slice = self.input[start..self.index] };
+        }
+        if (self.atLineStart() and char == '#' and
+            self.peek(1) == '#' and self.peek(2) == '#' and
+            self.peek(3) == ' ')
+        {
+            self.index += 4;
+            return Token{ .type = .h3, .slice = self.input[start..self.index] };
+        }
+        if (self.atLineStart() and char == '#' and
+            self.peek(1) == '#' and self.peek(2) == ' ')
+        {
             self.index += 3;
             return Token{ .type = .h2, .slice = self.input[start..self.index] };
         }
@@ -59,7 +95,7 @@ pub const Tokenizer = struct {
         if (target_index >= self.input.len) return 0;
         return self.input[target_index];
     }
-    
+
     fn atLineStart(self: *Tokenizer) bool {
         if (self.index == 0) return true;
         return if (self.input[self.index - 1] == '\n') true else false;
