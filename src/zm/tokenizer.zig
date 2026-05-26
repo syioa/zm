@@ -31,11 +31,11 @@ pub const Tokenizer = struct {
             return Token{ .type = .bold_marker, .slice = self.input[start..self.index] };
         }
 
-        if (char == '#' and self.peek(1) == '#' and self.peek(2) == ' ') {
+        if (self.atLineStart() and char == '#' and self.peek(1) == '#' and self.peek(2) == ' ') {
             self.index += 3;
             return Token{ .type = .h2, .slice = self.input[start..self.index] };
         }
-        if (char == '#' and self.peek(1) == ' ') {
+        if (self.atLineStart() and char == '#' and self.peek(1) == ' ') {
             self.index += 2;
             return Token{ .type = .h1, .slice = self.input[start..self.index] };
         }
@@ -58,5 +58,10 @@ pub const Tokenizer = struct {
         const target_index = self.index + offset;
         if (target_index >= self.input.len) return 0;
         return self.input[target_index];
+    }
+    
+    fn atLineStart(self: *Tokenizer) bool {
+        if (self.index == 0) return true;
+        return if (self.input[self.index - 1] == '\n') true else false;
     }
 };

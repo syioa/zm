@@ -4,9 +4,7 @@ const zm = @import("zm");
 const Token = zm.tokenizer.Token;
 const TokenType = zm.tokenizer.TokenType;
 const Tokenizer = zm.tokenizer.Tokenizer;
-
 const Node = zm.AST.Node;
-
 const Parser = zm.parser.Parser;
 
 
@@ -36,6 +34,7 @@ pub fn main() !void {
         \\
         \\## Subheading
         \\More text.
+        \\What is this - # heading?
     ;
 
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
