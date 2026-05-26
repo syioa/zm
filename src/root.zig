@@ -1,4 +1,7 @@
 const std = @import("std");
+pub const tokenizer = @import("zm/tokenizer.zig");
+pub const AST = @import("zm/AST.zig");
+pub const parser = @import("zm/parser.zig");
 
 pub fn repeat(allocator: std.mem.Allocator, pattern: []const u8, count: usize) ![]u8 {
     const result = try allocator.alloc(u8, pattern.len * count);
