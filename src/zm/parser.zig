@@ -1,5 +1,6 @@
 const std = @import("std");
 const Token = @import("./tokenizer.zig").Token;
+const TokenType = @import("tokenizer.zig").TokenType;
 const Node = @import("./AST.zig").Node;
 
 pub const Parser = struct {
@@ -59,9 +60,12 @@ pub const Parser = struct {
 
         const children_start_idx = self.nodes.items.len;
 
-        while (self.index < self.tokens.len) {
+        outer: while (self.index < self.tokens.len) {
             const t = self.tokens[self.index];
-            if (t.type == .newline or t.type == .h1 or t.type == .h2) break;
+            switch (t.type) {
+                .h1, .h2, .h3, .h4, .h5, .h6, .newline => break :outer,
+                .bold_marker, .text => {},
+            }
             _ = try self.parseInline();
         }
 
