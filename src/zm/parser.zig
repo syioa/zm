@@ -29,7 +29,7 @@ pub const Parser = struct {
                 .h5 => _ = try self.parseHeading(5),
                 .h6 => _ = try self.parseHeading(6),
                 .newline => self.index += 1,
-                .text, .bold_marker => _ = try self.parseParagraph(),
+                .text, .bold_marker, .italic_marker => _ = try self.parseParagraph(),
             }
         }
 
@@ -64,7 +64,7 @@ pub const Parser = struct {
             const t = self.tokens[self.index];
             switch (t.type) {
                 .h1, .h2, .h3, .h4, .h5, .h6, .newline => break :outer,
-                .bold_marker, .text => {},
+                .bold_marker, .italic_marker, .text => {},
             }
             _ = try self.parseInline();
         }
@@ -97,6 +97,23 @@ pub const Parser = struct {
 
                 if (self.index < self.tokens.len and self.tokens[self.index].type == .bold_marker) {
                     self.index += 1; // Consume closing '**'
+                }
+
+                self.bindChildren(node_idx, children_start_idx);
+                return node_idx;
+            },
+            .italic_marker => {
+                self.index += 1; // consume opening '__'
+                const node_idx = try self.appendNode(.{ .tag = .italic, .payload = null });
+
+                const children_start_idx = self.nodes.items.len;
+
+                while (self.index < self.tokens.len and self.tokens[self.index].type != .italic_marker) {
+                    _ = try self.parseInline();
+                }
+
+                if (self.index < self.tokens.len and self.tokens[self.index].type == .italic_marker) {
+                    self.index += 1; // consume closing '**'
                 }
 
                 self.bindChildren(node_idx, children_start_idx);

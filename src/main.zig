@@ -12,10 +12,11 @@ const Parser = zm.parser.Parser;
 // ============================================================
 
 fn printAST(nodes: []const Node, text_payload: []const Node.text) void {
+    _ = text_payload;
     var id: u32 = 0;
     while (id < nodes.len) {
-        if (nodes[id].tag == .heading) {
-            std.debug.print("Node id: {}\n    {s}\n", .{ id, text_payload[nodes[nodes[id].first_child].payload.?].value });
+        if (nodes[id].tag == .bold or nodes[id].tag == .italic) {
+            std.debug.print("Node id: {}\n {}\n", .{ id, nodes[id] });
         }
         id += 1;
     }
@@ -29,6 +30,7 @@ pub fn main() !void {
     const source =
         \\# Hello World
         \\This is a paragraph with **bold text** inside it.
+        \\This is a paragraph with __italic text__ inside it.
         \\
         \\## Subheading
         \\More text.

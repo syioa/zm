@@ -6,6 +6,7 @@ pub const NodeTag = enum {
     paragraph,
     text,
     bold,
+    italic,
 };
 
 pub const Node = struct {

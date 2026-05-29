@@ -8,6 +8,7 @@ pub const TokenType = enum {
     h5,
     h6,
     bold_marker,
+    italic_marker,
     newline,
     text,
 };
@@ -55,13 +56,14 @@ pub const Tokenizer = struct {
     fn matchInlineToken(self: *Tokenizer, char: u8, start: usize) ?Token {
         if (char == '\n') return self.makeToken(.newline, 1, start);
         if (self.matches("**")) return self.makeToken(.bold_marker, 2, start);
+        if (self.matches("__")) return self.makeToken(.italic_marker, 2, start);
         return null;
     }
 
     fn consumeText(self: *Tokenizer, start: usize) Token {
         while (self.index < self.input.len) {
             const char = self.input[self.index];
-            if (char == '\n' or self.matches("**")) break;
+            if (char == '\n' or self.matches("**") or self.matches("__")) break;
             self.index += 1;
         }
         return Token { .type = .text, .slice = self.input[start..self.index] };
