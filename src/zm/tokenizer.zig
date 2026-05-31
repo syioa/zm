@@ -11,6 +11,9 @@ pub const TokenType = enum {
     italic_marker,
     newline,
     text,
+    link_open,
+    link_mid,
+    link_close,
 };
 
 pub const Token = struct {
@@ -57,13 +60,17 @@ pub const Tokenizer = struct {
         if (char == '\n') return self.makeToken(.newline, 1, start);
         if (self.matches("**")) return self.makeToken(.bold_marker, 2, start);
         if (self.matches("__")) return self.makeToken(.italic_marker, 2, start);
+        if (char == '[') return self.makeToken(.link_open, 1, start);
+        if (char == ')') return self.makeToken(.link_close, 1, start);
+        if (self.matches("](")) return self.makeToken(.link_mid, 2, start);
         return null;
     }
 
     fn consumeText(self: *Tokenizer, start: usize) Token {
+        var char = self.input[self.index];
         while (self.index < self.input.len) {
-            const char = self.input[self.index];
-            if (char == '\n' or self.matches("**") or self.matches("__")) break;
+            char = self.input[self.index];
+            if (char == '\n' or self.matches("**") or self.matches("__") or char == '[' or self.matches("](") or char == ')') break;
             self.index += 1;
         }
         return Token { .type = .text, .slice = self.input[start..self.index] };

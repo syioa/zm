@@ -8,22 +8,25 @@ const Node = zm.AST.Node;
 const Parser = zm.parser.Parser;
 
 // ============================================================
-// 4. AST PRINTER
+// AST PRINTER
 // ============================================================
 
-fn printAST(nodes: []const Node, text_payload: []const Node.text) void {
-    _ = text_payload;
+fn printAST(nodes: []const Node, text_payload: []const Node.text, link_payload: []const Node.link) void {
+    // _ = text_payload;
     var id: u32 = 0;
     while (id < nodes.len) {
-        if (nodes[id].tag == .bold or nodes[id].tag == .italic) {
-            std.debug.print("Node id: {}\n {}\n", .{ id, nodes[id] });
+        // if (nodes[id].tag == .bold or nodes[id].tag == .italic) {
+            // std.debug.print("Node id: {}\n {}\n", .{ id, nodes[id] });
+        // }
+        if (nodes[id].tag == .link and nodes[id].first_child != std.math.maxInt(u32)) {
+            std.debug.print("Node id: {}\n text: {s} | link: {s}\n", .{id, text_payload[nodes[nodes[id].first_child].payload.?].value, link_payload[nodes[id].payload.?].url});
         }
         id += 1;
     }
 }
 
 // ============================================================
-// 5. MAIN
+// MAIN
 // ============================================================
 
 pub fn main() !void {
@@ -35,6 +38,8 @@ pub fn main() !void {
         \\## Subheading
         \\More text.
         \\What is this - # heading?
+        \\[Click here](https://google.com/)
+        //\\[C Wiki](https://en.wikipedia.org/wiki/C_(programming_language))   What if links contain ')'
     ;
 
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -55,6 +60,7 @@ pub fn main() !void {
         .nodes = try std.ArrayList(Node).initCapacity(allocator, 10),
         .heading_payload = try std.ArrayList(Node.heading).initCapacity(allocator, 10),
         .text_payload = try std.ArrayList(Node.text).initCapacity(allocator, 10),
+        .link_payload = try std.ArrayList(Node.link).initCapacity(allocator, 5),
     };
 
     // root_idx is just a u32 pointing to index 0
@@ -63,5 +69,6 @@ pub fn main() !void {
 
     // 3. Print via DOD Traversal
     // We just pass the underlying slice of the ArrayList and the root index
-    printAST(parser.nodes.items, parser.text_payload.items);
+    printAST(parser.nodes.items, parser.text_payload.items, parser.link_payload.items);
+    // std.debug.print("{s}\n", .{source});
 }

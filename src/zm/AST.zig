@@ -7,6 +7,7 @@ pub const NodeTag = enum {
     text,
     bold,
     italic,
+    link,
 };
 
 pub const Node = struct {
@@ -28,6 +29,9 @@ pub const Node = struct {
     pub const paragraph = void;
     pub const text = struct {
         value: []const u8,
+    };
+    pub const link = struct {
+        url: []const u8,
     };
     pub const bold = void;
 };
