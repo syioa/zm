@@ -16,7 +16,7 @@ pub const Node = struct {
     // DOD Child Tracking:
     // If a node has children, they are located in the flat array
     // starting at `first_child` and spanning `num_children` elements.
-    first_child: u32 = std.math.maxInt(u32), // Sentinel value meaning "no children"
+    first_child: ?u32 = null,
     num_children: u32 = 0,
 
     // Payload is an index to special properties of current Node

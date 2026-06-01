@@ -12,15 +12,11 @@ const Parser = zm.parser.Parser;
 // ============================================================
 
 fn printAST(nodes: []const Node, text_payload: []const Node.text, link_payload: []const Node.link) void {
-    // _ = text_payload;
+    _ = text_payload;
+    _ = link_payload;
     var id: u32 = 0;
     while (id < nodes.len) {
-        // if (nodes[id].tag == .bold or nodes[id].tag == .italic) {
-            // std.debug.print("Node id: {}\n {}\n", .{ id, nodes[id] });
-        // }
-        if (nodes[id].tag == .link and nodes[id].first_child != std.math.maxInt(u32)) {
-            std.debug.print("Node id: {}\n text: {s} | link: {s}\n", .{id, text_payload[nodes[nodes[id].first_child].payload.?].value, link_payload[nodes[id].payload.?].url});
-        }
+        std.debug.print("{} {}\n    first child: {any}\n    num children: {}\n\n", .{id, nodes[id].tag, nodes[id].first_child, nodes[id].num_children});
         id += 1;
     }
 }
@@ -31,7 +27,7 @@ fn printAST(nodes: []const Node, text_payload: []const Node.text, link_payload: 
 
 pub fn main() !void {
     const source =
-        \\# Hello World
+        \\# Hello **World**
         \\This is a paragraph with **bold text** inside it.
         \\This is a paragraph with __italic text__ inside it.
         \\
@@ -39,7 +35,7 @@ pub fn main() !void {
         \\More text.
         \\What is this - # heading?
         \\[Click here](https://google.com/)
-        //\\[C Wiki](https://en.wikipedia.org/wiki/C_(programming_language))   What if links contain ')'
+        // \\[C Wiki](https://en.wikipedia.org/wiki/C_(programming_language))   What if links contain ')'
     ;
 
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
