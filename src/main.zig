@@ -16,7 +16,13 @@ fn printAST(nodes: []const Node, text_payload: []const Node.text, link_payload: 
     _ = link_payload;
     var id: u32 = 0;
     while (id < nodes.len) {
-        std.debug.print("{} {}\n    first child: {any}\n    num children: {}\n\n", .{id, nodes[id].tag, nodes[id].first_child, nodes[id].num_children});
+        std.debug.print("{} {}\n    first child: {any}\n    num children: {}\n    parent idx: {any}\n\n", .{
+            id,
+            nodes[id].tag,
+            nodes[id].first_child,
+            nodes[id].num_children,
+            nodes[id].parent_idx,
+        });
         id += 1;
     }
 }
@@ -42,14 +48,14 @@ pub fn main() !void {
     defer arena.deinit();
     const allocator = arena.allocator();
 
-    // 1. Tokenize
+    // Tokenize
     var tokenizer = Tokenizer{ .input = source };
     var token_list = try std.ArrayList(Token).initCapacity(allocator, 10);
     while (tokenizer.next()) |token| {
         try token_list.append(allocator, token);
     }
 
-    // 2. Parse into DOD Flat Array
+    // Parse into DOD Flat Array
     var parser = Parser{
         .allocator = allocator,
         .tokens = token_list.items,
@@ -63,8 +69,6 @@ pub fn main() !void {
     const root_idx = try parser.parse();
     _ = root_idx;
 
-    // 3. Print via DOD Traversal
     // We just pass the underlying slice of the ArrayList and the root index
     printAST(parser.nodes.items, parser.text_payload.items, parser.link_payload.items);
-    // std.debug.print("{s}\n", .{source});
 }

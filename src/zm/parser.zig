@@ -16,21 +16,21 @@ pub const Parser = struct {
 
     pub fn parse(self: *Parser) !u32 {
         // The root node is always the first element in our flat array
-        const root_idx = try self.appendNode(.{ .tag = .document, .payload = null });
+        const root_idx = try self.appendNode(.{ .tag = .document, .payload = null, .parent_idx = null });
 
         const children_start_idx = self.nodes.items.len;
 
         while (self.index < self.tokens.len) {
             const token = self.tokens[self.index];
             switch (token.type) {
-                .h1 => _ = try self.parseHeading(1),
-                .h2 => _ = try self.parseHeading(2),
-                .h3 => _ = try self.parseHeading(3),
-                .h4 => _ = try self.parseHeading(4),
-                .h5 => _ = try self.parseHeading(5),
-                .h6 => _ = try self.parseHeading(6),
+                .h1 => _ = try self.parseHeading(1, root_idx),
+                .h2 => _ = try self.parseHeading(2, root_idx),
+                .h3 => _ = try self.parseHeading(3, root_idx),
+                .h4 => _ = try self.parseHeading(4, root_idx),
+                .h5 => _ = try self.parseHeading(5, root_idx),
+                .h6 => _ = try self.parseHeading(6, root_idx),
                 .newline => self.index += 1,
-                .text, .bold_marker, .italic_marker, .link_open, .link_close, .link_mid => _ = try self.parseParagraph(),
+                .text, .bold_marker, .italic_marker, .link_open, .link_close, .link_mid => _ = try self.parseParagraph(root_idx),
             }
         }
 
@@ -40,15 +40,19 @@ pub const Parser = struct {
         return root_idx;
     }
 
-    fn parseHeading(self: *Parser, level: u8) !u32 {
+    fn parseHeading(self: *Parser, level: u8, parent_idx: u32) !u32 {
         self.index += 1; // Consume heading token
         const payload_idx = try self.appendHeadingPayload(.{ .level = level });
-        const node_idx = try self.appendNode(.{ .tag = .heading, .payload = payload_idx });
+        const node_idx = try self.appendNode(.{
+            .tag = .heading,
+            .payload = payload_idx,
+            .parent_idx = parent_idx,
+        });
 
         const children_start_idx = self.nodes.items.len;
 
         while (self.index < self.tokens.len and self.tokens[self.index].type != .newline) {
-            _ = try self.parseInline();
+            _ = try self.parseInline(node_idx);
         }
         if (self.index < self.tokens.len) self.index += 1; // Consume newline
 
@@ -56,18 +60,19 @@ pub const Parser = struct {
         return node_idx;
     }
 
-    fn parseParagraph(self: *Parser) !u32 {
-        const node_idx = try self.appendNode(.{ .tag = .paragraph, .payload = null });
+    fn parseParagraph(self: *Parser, parent_idx: u32) !u32 {
+        const node_idx = try self.appendNode(.{ .tag = .paragraph, .payload = null, .parent_idx = parent_idx });
 
         const children_start_idx = self.nodes.items.len;
 
         outer: while (self.index < self.tokens.len) {
             const t = self.tokens[self.index];
             switch (t.type) {
-                .h1, .h2, .h3, .h4, .h5, .h6, .newline => break :outer,
+                .h1, .h2, .h3, .h4, .h5, .h6 => break :outer,
+                .newline => break :outer, // intentional, to be changed later
                 .bold_marker, .italic_marker, .text, .link_open, .link_close, .link_mid => {},
             }
-            _ = try self.parseInline();
+            _ = try self.parseInline(node_idx);
         }
 
         if (self.index < self.tokens.len and self.tokens[self.index].type == .newline) {
@@ -78,22 +83,26 @@ pub const Parser = struct {
         return node_idx;
     }
 
-    fn parseInline(self: *Parser) !u32 {
+    fn parseInline(self: *Parser, parent_idx: u32) !u32 {
         const token = self.tokens[self.index];
         switch (token.type) {
             .text => {
                 self.index += 1;
                 const payload_idx = try self.appendTextPayload(.{ .value = token.slice });
-                return self.appendNode(.{ .tag = .text, .payload = payload_idx });
+                return self.appendNode(.{ .tag = .text, .payload = payload_idx, .parent_idx = parent_idx });
             },
             .bold_marker => {
                 self.index += 1; // Consume opening '**'
-                const node_idx = try self.appendNode(.{ .tag = .bold, .payload = null });
+                const node_idx = try self.appendNode(.{
+                    .tag = .bold,
+                    .payload = null,
+                    .parent_idx = parent_idx,
+                });
 
                 const children_start_idx = self.nodes.items.len;
 
                 while (self.index < self.tokens.len and self.tokens[self.index].type != .bold_marker) {
-                    _ = try self.parseInline();
+                    _ = try self.parseInline(node_idx);
                 }
 
                 if (self.index < self.tokens.len and self.tokens[self.index].type == .bold_marker) {
@@ -105,12 +114,12 @@ pub const Parser = struct {
             },
             .italic_marker => {
                 self.index += 1; // consume opening '__'
-                const node_idx = try self.appendNode(.{ .tag = .italic, .payload = null });
+                const node_idx = try self.appendNode(.{ .tag = .italic, .payload = null, .parent_idx = parent_idx });
 
                 const children_start_idx = self.nodes.items.len;
 
                 while (self.index < self.tokens.len and self.tokens[self.index].type != .italic_marker) {
-                    _ = try self.parseInline();
+                    _ = try self.parseInline(node_idx);
                 }
 
                 if (self.index < self.tokens.len and self.tokens[self.index].type == .italic_marker) {
@@ -122,33 +131,43 @@ pub const Parser = struct {
             },
             .link_open => {
                 if (self.isLinkValid()) {
-                    return self.parseLink();
+                    return self.parseLink(parent_idx);
                 } else {
                     self.index += 1;
                     return self.appendNode(.{
                         .tag = .text,
                         .payload = try self.appendTextPayload(.{ .value = token.slice }),
+                        .parent_idx = parent_idx,
                     });
                 }
             },
             else => {
                 self.index += 1;
                 const payload_idx = try self.appendTextPayload(.{ .value = token.slice });
-                return self.appendNode(.{ .tag = .text, .payload = payload_idx });
+                return self.appendNode(.{
+                    .tag = .text,
+                    .payload = payload_idx,
+                    .parent_idx = parent_idx,
+                });
             },
         }
     }
 
-    fn parseLink(self: *Parser) !u32 {
+    fn parseLink(self: *Parser, parent_idx: u32) !u32 {
         self.index += 1; // consume .link_open
 
-        const link_idx = try self.appendNode(.{ .tag = .link, .payload = try self.appendLinkPayload(.{ .url = "" }) });
+        const link_idx = try self.appendNode(.{
+            .tag = .link,
+            .payload = try self.appendLinkPayload(.{ .url = "" }),
+            .parent_idx = parent_idx,
+        });
 
         const children_start_idx: u32 = @intCast(self.nodes.items.len);
 
         _ = try self.appendNode(.{
             .tag = .text,
             .payload = try self.appendTextPayload(.{ .value = self.tokens[self.index].slice }),
+            .parent_idx = link_idx,
         });
         self.index += 2; // consume .text(label) and .link_mid
 
