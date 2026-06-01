@@ -20,7 +20,7 @@ fn printAST(nodes: []const Node, text_payload: []const Node.text, link_payload: 
             id,
             nodes[id].tag,
             nodes[id].first_child,
-            nodes[id].num_children,
+            nodes[id].num_descendants,
             nodes[id].parent_idx,
         });
         id += 1;

@@ -17,7 +17,7 @@ pub const Node = struct {
     // If a node has children, they are located in the flat array
     // starting at `first_child` and spanning `num_children` elements.
     first_child: ?u32 = null,
-    num_children: u32 = 0,
+    num_descendants: u32 = 0,
     parent_idx: ?u32 = null,
 
     // Payload is an index to special properties of current Node

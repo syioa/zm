@@ -228,7 +228,7 @@ pub const Parser = struct {
         if (end_idx > start_idx) {
             var parent = &self.nodes.items[parent_idx];
             parent.first_child = @intCast(start_idx);
-            parent.num_children = @intCast(end_idx - start_idx);
+            parent.num_descendants = @intCast(end_idx - start_idx);
         }
     }
 };
