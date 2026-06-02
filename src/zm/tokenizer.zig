@@ -69,11 +69,24 @@ pub const Tokenizer = struct {
     fn consumeText(self: *Tokenizer, start: usize) Token {
         var char = self.input[self.index];
         while (self.index < self.input.len) {
+            self.consumeEscapeChar(self.input[self.index]);
             char = self.input[self.index];
             if (char == '\n' or self.matches("**") or self.matches("__") or char == '[' or self.matches("](") or char == ')') break;
             self.index += 1;
         }
         return Token { .type = .text, .slice = self.input[start..self.index] };
+    }
+
+    fn consumeEscapeChar(self: *Tokenizer, char: u8) void {
+        if (char == '\\') {
+            switch (self.peek(1)) {
+                '[', ']', '(', ')', '\\' => {
+                    self.index += 2;
+                    return;
+                },
+                else => {}
+            }
+        }
     }
 
     fn makeToken(self: *Tokenizer, tag: TokenType, len: usize, start: usize) Token {

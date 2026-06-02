@@ -12,17 +12,17 @@ const Parser = zm.parser.Parser;
 // ============================================================
 
 fn printAST(nodes: []const Node, text_payload: []const Node.text, link_payload: []const Node.link) void {
-    _ = text_payload;
-    _ = link_payload;
+    // _ = text_payload;
+    // _ = link_payload;
     var id: u32 = 0;
     while (id < nodes.len) {
-        std.debug.print("{} {}\n    first child: {any}\n    num children: {}\n    parent idx: {any}\n\n", .{
-            id,
-            nodes[id].tag,
-            nodes[id].first_child,
-            nodes[id].num_descendants,
-            nodes[id].parent_idx,
-        });
+        if (nodes[id].tag == .link) {
+            std.debug.print("Link text: {s}    Link url: {s}\n", .{
+                text_payload[nodes[nodes[id].first_child.?].payload.?].value,
+                link_payload[nodes[id].payload.?].url,
+            });
+        }
+
         id += 1;
     }
 }
@@ -41,7 +41,9 @@ pub fn main() !void {
         \\More text.
         \\What is this - # heading?
         \\[Click here](https://google.com/)
-        // \\[C Wiki](https://en.wikipedia.org/wiki/C_(programming_language))   What if links contain ')'
+        \\
+        \\#### What if links contain ')'
+        \\[C Wiki](https://en.wikipedia.org/wiki/C_\(programming_language\))
     ;
 
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -53,6 +55,7 @@ pub fn main() !void {
     var token_list = try std.ArrayList(Token).initCapacity(allocator, 10);
     while (tokenizer.next()) |token| {
         try token_list.append(allocator, token);
+        std.debug.print("token type: {any}\ntoken slice: {s}\n\n", .{token.type, token.slice});
     }
 
     // Parse into DOD Flat Array
@@ -70,5 +73,5 @@ pub fn main() !void {
     _ = root_idx;
 
     // We just pass the underlying slice of the ArrayList and the root index
-    printAST(parser.nodes.items, parser.text_payload.items, parser.link_payload.items);
+    // printAST(parser.nodes.items, parser.text_payload.items, parser.link_payload.items);
 }
