@@ -82,7 +82,6 @@ pub const Tokenizer = struct {
             switch (self.peek(1)) {
                 '[', ']', '(', ')', '\\' => {
                     self.index += 2;
-                    return;
                 },
                 else => {}
             }

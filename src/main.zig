@@ -55,7 +55,6 @@ pub fn main() !void {
     var token_list = try std.ArrayList(Token).initCapacity(allocator, 10);
     while (tokenizer.next()) |token| {
         try token_list.append(allocator, token);
-        std.debug.print("token type: {any}\ntoken slice: {s}\n\n", .{token.type, token.slice});
     }
 
     // Parse into DOD Flat Array
@@ -73,5 +72,5 @@ pub fn main() !void {
     _ = root_idx;
 
     // We just pass the underlying slice of the ArrayList and the root index
-    // printAST(parser.nodes.items, parser.text_payload.items, parser.link_payload.items);
+    printAST(parser.nodes.items, parser.text_payload.items, parser.link_payload.items);
 }
