@@ -36,7 +36,7 @@ pub const Tokenizer = struct {
         }
 
         if (self.matchInlineToken(char, start)) |token| return token;
-        
+
         //TODO: check if infinite loops are possible
 
         // Text fallback
@@ -71,10 +71,11 @@ pub const Tokenizer = struct {
         while (self.index < self.input.len) {
             self.consumeEscapeChar(self.input[self.index]);
             char = self.input[self.index];
-            if (char == '\n' or self.matches("**") or self.matches("__") or char == '[' or self.matches("](") or char == ')') break;
+            if (char == '\n' or char == '[' or char == ')' or
+                self.matches("**") or self.matches("__") or self.matches("](")) break;
             self.index += 1;
         }
-        return Token { .type = .text, .slice = self.input[start..self.index] };
+        return Token{ .type = .text, .slice = self.input[start..self.index] };
     }
 
     fn consumeEscapeChar(self: *Tokenizer, char: u8) void {
@@ -83,14 +84,14 @@ pub const Tokenizer = struct {
                 '[', ']', '(', ')', '\\' => {
                     self.index += 2;
                 },
-                else => {}
+                else => {},
             }
         }
     }
 
     fn makeToken(self: *Tokenizer, tag: TokenType, len: usize, start: usize) Token {
         self.index += len;
-        return Token { .type = tag, .slice = self.input[start..self.index] };
+        return Token{ .type = tag, .slice = self.input[start..self.index] };
     }
 
     fn peek(self: *Tokenizer, offset: usize) u8 {
