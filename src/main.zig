@@ -47,7 +47,7 @@ pub fn main() !void {
         \\[Click here](https://google.com/)
         \\
         \\#### What if links contain ')'
-        \\[C Wiki](https://en.wikipedia.org/wiki/C_\(programming_language\))
+        \\[C Wiki](https://en.wikipedia.org/wiki/C_(programming_language\))
     ;
 
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -66,15 +66,16 @@ pub fn main() !void {
         .allocator = allocator,
         .tokens = token_list.items,
         .nodes = try std.ArrayList(Node).initCapacity(allocator, 10),
-        .heading_payload = try std.ArrayList(Node.heading).initCapacity(allocator, 10),
-        .text_payload = try std.ArrayList(Node.text).initCapacity(allocator, 10),
-        .link_payload = try std.ArrayList(Node.link).initCapacity(allocator, 5),
+        .heading_payloads = try std.ArrayList(Node.heading).initCapacity(allocator, 10),
+        .text_payloads = try std.ArrayList(Node.text).initCapacity(allocator, 10),
+        .link_payloads = try std.ArrayList(Node.link).initCapacity(allocator, 5),
     };
+    defer parser.deinit();
 
     // root_idx is just a u32 pointing to index 0
     const root_idx = try parser.parse();
     _ = root_idx;
 
     // We just pass the underlying slice of the ArrayList and the root index
-    printAST(parser.nodes.items, parser.text_payload.items, parser.link_payload.items);
+    printAST(parser.nodes.items, parser.text_payloads.items, parser.link_payloads.items);
 }

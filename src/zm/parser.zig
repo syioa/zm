@@ -10,9 +10,16 @@ pub const Parser = struct {
     nodes: std.ArrayList(Node),
     index: usize = 0,
 
-    heading_payload: std.ArrayList(Node.heading),
-    text_payload: std.ArrayList(Node.text),
-    link_payload: std.ArrayList(Node.link),
+    heading_payloads: std.ArrayList(Node.heading),
+    text_payloads: std.ArrayList(Node.text),
+    link_payloads: std.ArrayList(Node.link),
+
+    pub fn deinit(self: *Parser) void {
+        self.nodes.deinit(self.*.allocator);
+        self.heading_payloads.deinit(self.*.allocator);
+        self.text_payloads.deinit(self.*.allocator);
+        self.link_payloads.deinit(self.*.allocator);
+    }
 
     pub fn parse(self: *Parser) !u32 {
         // The root node is always the first element in our flat array
@@ -23,10 +30,7 @@ pub const Parser = struct {
         while (self.index < self.tokens.len) {
             const token = self.tokens[self.index];
             switch (token.type) {
-                .h1 => _ = try self.parseHeading(1, root_idx),
-                .h2 => _ = try self.parseHeading(2, root_idx),
-                .h3 => _ = try self.parseHeading(3, root_idx),
-                .h4 => _ = try self.parseHeading(4, root_idx),
+                .h1 => _ = try self.parseHeading(1, root_idx), .h2 => _ = try self.parseHeading(2, root_idx), .h3 => _ = try self.parseHeading(3, root_idx), .h4 => _ = try self.parseHeading(4, root_idx),
                 .h5 => _ = try self.parseHeading(5, root_idx),
                 .h6 => _ = try self.parseHeading(6, root_idx),
                 .newline => self.index += 1,
@@ -172,7 +176,7 @@ pub const Parser = struct {
         self.index += 2; // consume .text(label) and .link_mid
 
         self.bindChildren(link_idx, children_start_idx);
-        self.link_payload.items[self.nodes.items[link_idx].payload.?].url = self.tokens[self.index].slice;
+        self.link_payloads.items[self.nodes.items[link_idx].payload.?].url = self.tokens[self.index].slice;
 
         self.index += 2; // consume .text(url) and .link_close
 
@@ -197,28 +201,39 @@ pub const Parser = struct {
 
     // --- DOD Helper Methods ---
 
-    /// Appends a node to the contiguous array and returns its index
+    /// Appends a node to the `nodes` ArrayList and returns its index
+    ///
+    /// This functions allocates memory if necessary
     fn appendNode(self: *Parser, node: Node) !u32 {
         const idx: u32 = @intCast(self.nodes.items.len);
         try self.nodes.append(self.*.allocator, node);
         return idx;
     }
 
+    /// Appends a heading payload and returns its index
+    ///
+    /// This function allocates memory if necessary
     fn appendHeadingPayload(self: *Parser, payload: Node.heading) !u32 {
-        const idx: u32 = @intCast(self.heading_payload.items.len);
-        try self.heading_payload.append(self.*.allocator, payload);
+        const idx: u32 = @intCast(self.heading_payloads.items.len);
+        try self.heading_payloads.append(self.*.allocator, payload);
         return idx;
     }
 
+    /// Appends a text payload and returns its index
+    ///
+    /// This function allocates memory if necessary
     fn appendTextPayload(self: *Parser, payload: Node.text) !u32 {
-        const idx: u32 = @intCast(self.text_payload.items.len);
-        try self.text_payload.append(self.*.allocator, payload);
+        const idx: u32 = @intCast(self.text_payloads.items.len);
+        try self.text_payloads.append(self.*.allocator, payload);
         return idx;
     }
 
+    /// Appends a link payload and returns its index
+    ///
+    /// This function allocates memory if necessary
     fn appendLinkPayload(self: *Parser, payload: Node.link) !u32 {
-        const idx: u32 = @intCast(self.link_payload.items.len);
-        try self.link_payload.append(self.*.allocator, payload);
+        const idx: u32 = @intCast(self.link_payloads.items.len);
+        try self.link_payloads.append(self.*.allocator, payload);
         return idx;
     }
 
