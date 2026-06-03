@@ -65,31 +65,52 @@ pub const Tokenizer = struct {
     }
 
     fn matchInlineToken(self: *Tokenizer, char: u8, start: usize) ?Token {
-        if (char == '\n') return self.makeToken(.newline, 1, start);
-        if (self.state == .none and char == '*') return self.makeToken(.bold_marker, 1, start);
-        if (self.state == .none and char == '_') return self.makeToken(.italic_marker, 1, start);
-        if (char == '[') {
-            self.state = .link_text;
-            return self.makeToken(.link_open, 1, start);
+        if (self.state == .none) {
+            if (char == '\n') return self.makeToken(.newline, 1, start);
+            if (char == '*') return self.makeToken(.bold_marker, 1, start);
+            if (char == '_') return self.makeToken(.italic_marker, 1, start);
+            if (char == '[') {
+                self.state = .link_text;
+                return self.makeToken(.link_open, 1, start);
+            }
         }
-        if (char == ')') {
-            self.state = .none;
-            return self.makeToken(.link_close, 1, start);
+        if (self.state == .link_text) {
+            if (self.matches("](")) {
+                self.state = .link_url;
+                return self.makeToken(.link_mid, 2, start);
+            }
         }
-        if (self.matches("](")) {
-            self.state = .link_url;
-            return self.makeToken(.link_mid, 2, start);
+        if (self.state == .link_url) {
+            if (char == ')') {
+                self.state = .none;
+                return self.makeToken(.link_close, 1, start);
+            }
         }
         return null;
     }
 
     fn consumeText(self: *Tokenizer, start: usize) Token {
         var char = self.input[self.index];
-        while (self.index < self.input.len) {
+        
+        outer: while (self.index < self.input.len) {
             self.consumeEscapeChar(self.input[self.index]);
             char = self.input[self.index];
-            if (char == '\n' or char == '[' or char == ')' or self.matches("](")) break;
-            if (self.state == .none and (char == '*' or char == '_')) break;
+
+            switch (self.state) {
+                .none => {
+                    switch (char) {
+                        '*', '_', '[', '\n' => break :outer,
+                        else => {}
+                    }
+                },
+                .link_text => {
+                    if (self.matches("](")) break :outer;
+                },
+                .link_url => {
+                    if (char == ')') break :outer;
+                },
+            }
+
             self.index += 1;
         }
         return Token{ .type = .text, .slice = self.input[start..self.index] };
