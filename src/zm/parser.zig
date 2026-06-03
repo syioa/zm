@@ -1,7 +1,7 @@
 const std = @import("std");
-const Token = @import("./tokenizer.zig").Token;
+const Token = @import("tokenizer.zig").Token;
 const TokenType = @import("tokenizer.zig").TokenType;
-const Node = @import("./AST.zig").Node;
+const Node = @import("AST.zig").Node;
 
 pub const Parser = struct {
     allocator: std.mem.Allocator,
@@ -92,7 +92,7 @@ pub const Parser = struct {
                 return self.appendNode(.{ .tag = .text, .payload = payload_idx, .parent_idx = parent_idx });
             },
             .bold_marker => {
-                self.index += 1; // Consume opening '**'
+                self.index += 1; // Consume opening '*'
                 const node_idx = try self.appendNode(.{
                     .tag = .bold,
                     .payload = null,
@@ -106,14 +106,14 @@ pub const Parser = struct {
                 }
 
                 if (self.index < self.tokens.len and self.tokens[self.index].type == .bold_marker) {
-                    self.index += 1; // Consume closing '**'
+                    self.index += 1; // Consume closing '*'
                 }
 
                 self.bindChildren(node_idx, children_start_idx);
                 return node_idx;
             },
             .italic_marker => {
-                self.index += 1; // consume opening '__'
+                self.index += 1; // consume opening '_'
                 const node_idx = try self.appendNode(.{ .tag = .italic, .payload = null, .parent_idx = parent_idx });
 
                 const children_start_idx = self.nodes.items.len;
@@ -123,7 +123,7 @@ pub const Parser = struct {
                 }
 
                 if (self.index < self.tokens.len and self.tokens[self.index].type == .italic_marker) {
-                    self.index += 1; // consume closing '**'
+                    self.index += 1; // consume closing '_'
                 }
 
                 self.bindChildren(node_idx, children_start_idx);
@@ -197,7 +197,7 @@ pub const Parser = struct {
 
     // --- DOD Helper Methods ---
 
-    // Appends a node to the contiguous array and returns its index
+    /// Appends a node to the contiguous array and returns its index
     fn appendNode(self: *Parser, node: Node) !u32 {
         const idx: u32 = @intCast(self.nodes.items.len);
         try self.nodes.append(self.*.allocator, node);

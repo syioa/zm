@@ -21,6 +21,10 @@ fn printAST(nodes: []const Node, text_payload: []const Node.text, link_payload: 
                 text_payload[nodes[nodes[id].first_child.?].payload.?].value,
                 link_payload[nodes[id].payload.?].url,
             });
+        } else if (nodes[id].tag == .bold) {
+            std.debug.print("Bold text: {s}\n", .{text_payload[nodes[nodes[id].first_child.?].payload.?].value});
+        } else if (nodes[id].tag == .italic) {
+            std.debug.print("Italic text: {s}\n", .{text_payload[nodes[nodes[id].first_child.?].payload.?].value});
         }
 
         id += 1;
@@ -33,9 +37,9 @@ fn printAST(nodes: []const Node, text_payload: []const Node.text, link_payload: 
 
 pub fn main() !void {
     const source =
-        \\# Hello **World**
-        \\This is a paragraph with **bold text** inside it.
-        \\This is a paragraph with __italic text__ inside it.
+        \\# Hello *World*
+        \\This is a paragraph with *bold text* inside it.
+        \\This is a paragraph with _italic text_ inside it.
         \\
         \\## Subheading
         \\More text.

@@ -16,6 +16,12 @@ pub const TokenType = enum {
     link_close,
 };
 
+pub const State = enum {
+    link_text,
+    link_url,
+    none,
+};
+
 pub const Token = struct {
     type: TokenType,
     slice: []const u8,
@@ -24,6 +30,8 @@ pub const Token = struct {
 pub const Tokenizer = struct {
     input: []const u8,
     index: usize = 0,
+    /// Specifies the current tokenizing state
+    state: State = .none,
 
     pub fn next(self: *Tokenizer) ?Token {
         if (self.index >= self.input.len) return null;
@@ -58,11 +66,20 @@ pub const Tokenizer = struct {
 
     fn matchInlineToken(self: *Tokenizer, char: u8, start: usize) ?Token {
         if (char == '\n') return self.makeToken(.newline, 1, start);
-        if (self.matches("**")) return self.makeToken(.bold_marker, 2, start);
-        if (self.matches("__")) return self.makeToken(.italic_marker, 2, start);
-        if (char == '[') return self.makeToken(.link_open, 1, start);
-        if (char == ')') return self.makeToken(.link_close, 1, start);
-        if (self.matches("](")) return self.makeToken(.link_mid, 2, start);
+        if (self.state == .none and char == '*') return self.makeToken(.bold_marker, 1, start);
+        if (self.state == .none and char == '_') return self.makeToken(.italic_marker, 1, start);
+        if (char == '[') {
+            self.state = .link_text;
+            return self.makeToken(.link_open, 1, start);
+        }
+        if (char == ')') {
+            self.state = .none;
+            return self.makeToken(.link_close, 1, start);
+        }
+        if (self.matches("](")) {
+            self.state = .link_url;
+            return self.makeToken(.link_mid, 2, start);
+        }
         return null;
     }
 
@@ -71,8 +88,8 @@ pub const Tokenizer = struct {
         while (self.index < self.input.len) {
             self.consumeEscapeChar(self.input[self.index]);
             char = self.input[self.index];
-            if (char == '\n' or char == '[' or char == ')' or
-                self.matches("**") or self.matches("__") or self.matches("](")) break;
+            if (char == '\n' or char == '[' or char == ')' or self.matches("](")) break;
+            if (self.state == .none and (char == '*' or char == '_')) break;
             self.index += 1;
         }
         return Token{ .type = .text, .slice = self.input[start..self.index] };
