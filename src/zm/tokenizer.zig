@@ -119,7 +119,7 @@ pub const Tokenizer = struct {
     fn consumeEscapeChar(self: *Tokenizer, char: u8) void {
         if (char == '\\') {
             switch (self.peek(1)) {
-                '[', ']', '(', ')', '\\' => {
+                '[', ']', '(', ')', '\\', '*', '_' => {
                     self.index += 2;
                 },
                 else => {},
