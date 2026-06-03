@@ -91,7 +91,7 @@ pub const Tokenizer = struct {
 
     fn consumeText(self: *Tokenizer, start: usize) Token {
         var char = self.input[self.index];
-        
+
         outer: while (self.index < self.input.len) {
             self.consumeEscapeChar(self.input[self.index]);
             char = self.input[self.index];
@@ -100,7 +100,7 @@ pub const Tokenizer = struct {
                 .none => {
                     switch (char) {
                         '*', '_', '[', '\n' => break :outer,
-                        else => {}
+                        else => {},
                     }
                 },
                 .link_text => {

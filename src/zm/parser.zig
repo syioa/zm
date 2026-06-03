@@ -30,7 +30,10 @@ pub const Parser = struct {
         while (self.index < self.tokens.len) {
             const token = self.tokens[self.index];
             switch (token.type) {
-                .h1 => _ = try self.parseHeading(1, root_idx), .h2 => _ = try self.parseHeading(2, root_idx), .h3 => _ = try self.parseHeading(3, root_idx), .h4 => _ = try self.parseHeading(4, root_idx),
+                .h1 => _ = try self.parseHeading(1, root_idx),
+                .h2 => _ = try self.parseHeading(2, root_idx),
+                .h3 => _ = try self.parseHeading(3, root_idx),
+                .h4 => _ = try self.parseHeading(4, root_idx),
                 .h5 => _ = try self.parseHeading(5, root_idx),
                 .h6 => _ = try self.parseHeading(6, root_idx),
                 .newline => self.index += 1,
