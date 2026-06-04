@@ -39,7 +39,6 @@ fn printAST(parser: *Parser) !void {
 // MAIN
 // ============================================================
 
-
 pub fn main(init: std.process.Init) !void {
     var arena = std.heap.ArenaAllocator.init(init.gpa);
     defer arena.deinit();
