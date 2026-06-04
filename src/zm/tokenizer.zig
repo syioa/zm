@@ -52,7 +52,7 @@ pub const Tokenizer = struct {
     }
 
     fn matchBlockToken(self: *Tokenizer, char: u8, start: usize) ?Token {
-        if (char == '#') {
+        if (char == '#' and self.state == .none) {
             if (self.matches("###### ")) return self.makeToken(.h6, 7, start);
             if (self.matches("##### ")) return self.makeToken(.h5, 6, start);
             if (self.matches("#### ")) return self.makeToken(.h4, 5, start);
