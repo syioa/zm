@@ -39,25 +39,15 @@ fn printAST(parser: *Parser) !void {
 // MAIN
 // ============================================================
 
-pub fn main() !void {
-    const source =
-        \\# Hello *World*
-        \\This is a paragraph with *bold text* inside it.
-        \\This is a paragraph with _italic text_ inside it.
-        \\
-        \\## Subheading
-        \\More text.
-        \\What is this - # heading?
-        \\[Click here](https://google.com/)
-        \\
-        \\#### What if links contain ')'
-        \\[C Wiki](https://en.wikipedia.org/wiki/C_(programming_language\))
-    ;
 
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+pub fn main(init: std.process.Init) !void {
+    var arena = std.heap.ArenaAllocator.init(init.gpa);
     defer arena.deinit();
     const allocator = arena.allocator();
     // const allocator = init.gpa;
+
+    const source = try std.Io.Dir.cwd().readFileAlloc(init.io, "./docs/main.md", init.gpa, .limited(1024 * 20));
+    defer init.gpa.free(source);
 
     // Tokenize
     var tokenizer = Tokenizer{ .input = source };

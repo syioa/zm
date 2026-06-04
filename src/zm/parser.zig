@@ -240,6 +240,7 @@ pub const Parser = struct {
         return idx;
     }
 
+    /// Get the properties of the heading node whose index is `node_idx`
     pub fn getHeadingPayload(self: *Parser, node_idx: ?u32) !Node.heading {
         if (node_idx) |idx| {
             if (idx >= self.nodes.items.len) return error.IndexOutOfBounds;
@@ -251,6 +252,7 @@ pub const Parser = struct {
         } else return error.IndexFoundNull;
     }
 
+    /// Get the properties of the text node whose index is `node_idx`
     pub fn getTextPayload(self: *Parser, node_idx: ?u32) !Node.text {
         if (node_idx) |idx| {
             if (idx >= self.nodes.items.len) return error.IndexOutOfBounds;
@@ -262,6 +264,7 @@ pub const Parser = struct {
         } else return error.IndexFoundNull;
     }
 
+    /// Get the properties of the link node whose index is `node_idx`
     pub fn getLinkPayload(self: *Parser, node_idx: ?u32) !Node.link {
         if (node_idx) |idx| {
             if (idx >= self.nodes.items.len) return error.IndexOutOfBounds;
