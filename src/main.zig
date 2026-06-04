@@ -11,24 +11,28 @@ const Parser = zm.parser.Parser;
 // AST PRINTER
 // ============================================================
 
-fn printAST(nodes: []const Node, text_payload: []const Node.text, link_payload: []const Node.link) void {
-    // _ = text_payload;
-    // _ = link_payload;
+fn printAST(parser: *Parser) !void {
+    const nodes = &parser.nodes.items;
     var id: u32 = 0;
+    var count: u32 = 0;
     while (id < nodes.len) {
-        if (nodes[id].tag == .link) {
+        if (nodes.*[id].tag == .link) {
             std.debug.print("Link text: {s}    Link url: {s}\n", .{
-                text_payload[nodes[nodes[id].first_child.?].payload.?].value,
-                link_payload[nodes[id].payload.?].url,
+                (try parser.getTextPayload(nodes.*[id].first_child)).value,
+                (try parser.getLinkPayload(id)).url,
             });
-        } else if (nodes[id].tag == .bold) {
-            std.debug.print("Bold text: {s}\n", .{text_payload[nodes[nodes[id].first_child.?].payload.?].value});
-        } else if (nodes[id].tag == .italic) {
-            std.debug.print("Italic text: {s}\n", .{text_payload[nodes[nodes[id].first_child.?].payload.?].value});
+        } else if (nodes.*[id].tag == .bold) {
+            std.debug.print("Bold text: {s}\n", .{(try parser.getTextPayload(nodes.*[id].first_child)).value});
+        } else if (nodes.*[id].tag == .italic) {
+            std.debug.print("Italic text: {s}\n", .{(try parser.getTextPayload(nodes.*[id].first_child)).value});
+        } else if (nodes.*[id].tag == .paragraph) {
+            count += 1;
         }
 
         id += 1;
     }
+
+    std.debug.print("Number of paragraphs: {}\n", .{count});
 }
 
 // ============================================================
@@ -53,10 +57,13 @@ pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();
+    // const allocator = init.gpa;
 
     // Tokenize
     var tokenizer = Tokenizer{ .input = source };
     var token_list = try std.ArrayList(Token).initCapacity(allocator, 10);
+    defer token_list.deinit(allocator);
+
     while (tokenizer.next()) |token| {
         try token_list.append(allocator, token);
     }
@@ -77,5 +84,5 @@ pub fn main() !void {
     _ = root_idx;
 
     // We just pass the underlying slice of the ArrayList and the root index
-    printAST(parser.nodes.items, parser.text_payloads.items, parser.link_payloads.items);
+    try printAST(&parser);
 }

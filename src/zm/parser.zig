@@ -240,6 +240,39 @@ pub const Parser = struct {
         return idx;
     }
 
+    pub fn getHeadingPayload(self: *Parser, node_idx: ?u32) !Node.heading {
+        if (node_idx) |idx| {
+            if (idx >= self.nodes.items.len) return error.IndexOutOfBounds;
+            if (self.nodes.items[idx].tag != .heading) return error.HeadingTagMismatch;
+
+            if (self.nodes.items[idx].payload) |payload| {
+                return self.heading_payloads.items[payload];
+            } else unreachable;
+        } else return error.IndexFoundNull;
+    }
+
+    pub fn getTextPayload(self: *Parser, node_idx: ?u32) !Node.text {
+        if (node_idx) |idx| {
+            if (idx >= self.nodes.items.len) return error.IndexOutOfBounds;
+            if (self.nodes.items[idx].tag != .text) return error.TextTagMismatch;
+
+            if (self.nodes.items[idx].payload) |payload| {
+                return self.text_payloads.items[payload];
+            } else unreachable;
+        } else return error.IndexFoundNull;
+    }
+
+    pub fn getLinkPayload(self: *Parser, node_idx: ?u32) !Node.link {
+        if (node_idx) |idx| {
+            if (idx >= self.nodes.items.len) return error.IndexOutOfBounds;
+            if (self.nodes.items[idx].tag != .link) return error.LinkTagMismatch;
+
+            if (self.nodes.items[idx].payload) |payload| {
+                return self.link_payloads.items[payload];
+            } else unreachable;
+        } else return error.IndexFoundNull;
+    }
+
     // Updates a node in-place to point to the range of nodes that represent its children
     fn bindChildren(self: *Parser, parent_idx: u32, start_idx: usize) void {
         const end_idx = self.nodes.items.len;
