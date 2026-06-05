@@ -76,14 +76,19 @@ pub const Parser = struct {
             const t = self.tokens[self.index];
             switch (t.type) {
                 .h1, .h2, .h3, .h4, .h5, .h6 => break :outer,
-                .newline => break :outer, // intentional, to be changed later
+                .newline => {
+                    if (self.tokens[self.index + 1].type == .newline) break :outer;
+                }, // intentional, to be changed later
                 .bold_marker, .italic_marker, .text, .link_open, .link_close, .link_mid => {},
             }
             _ = try self.parseInline(node_idx);
         }
 
-        if (self.index < self.tokens.len and self.tokens[self.index].type == .newline) {
-            self.index += 1;
+        if (self.index < self.tokens.len and
+            self.tokens[self.index].type == .newline and
+            self.tokens[self.index + 1].type == .newline)
+        {
+            self.index += 2;
         }
 
         self.bindChildren(node_idx, children_start_idx);
@@ -93,6 +98,12 @@ pub const Parser = struct {
     fn parseInline(self: *Parser, parent_idx: u32) !u32 {
         const token = self.tokens[self.index];
         switch (token.type) {
+            .newline => {
+                // maybe rather than creating a text Node, we should create a special newline Node
+                self.index += 1;
+                const payload_idx = try self.appendTextPayload(.{ .value = "\n" });
+                return self.appendNode(.{ .tag = .text, .payload = payload_idx, .parent_idx = parent_idx });
+            },
             .text => {
                 self.index += 1;
                 const payload_idx = try self.appendTextPayload(.{ .value = token.slice });
