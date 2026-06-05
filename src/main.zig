@@ -45,7 +45,14 @@ pub fn main(init: std.process.Init) !void {
     const allocator = arena.allocator();
     // const allocator = init.gpa;
 
-    const source = try std.Io.Dir.cwd().readFileAlloc(init.io, "./tests/main.md", init.gpa, .limited(1024 * 20));
+    const args = try init.minimal.args.toSlice(allocator);
+
+    if (args.len <= 1) {
+        std.debug.print("Usage: zm FILE_NAME\n", .{});
+        return;
+    }
+
+    const source = try std.Io.Dir.cwd().readFileAlloc(init.io, args[1], init.gpa, .limited(1024 * 20));
     defer init.gpa.free(source);
 
     // Tokenize
