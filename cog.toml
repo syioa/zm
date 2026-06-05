@@ -11,7 +11,7 @@ skip_ci = "[skip ci]"
 skip_untracked = false
 pre_bump_hooks = [
     "echo 'bumping from {{latest|0.0.0}} to {{version|0.0.1}}'",
-    "sed -i 's/\\.version = \"[^\"]*\"/\\.version = \"0.0.1\"/' build.zig.zon",
+    "sed -i 's/\\.version = \"[^\"]*\"/\\.version = \"{{version|0.0.1}}\"/' build.zig.zon",
 ]
 post_bump_hooks = []
 pre_package_bump_hooks = []
