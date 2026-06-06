@@ -24,7 +24,7 @@ pub const Node = struct {
     payload: ?u32,
 
     // Properties of All Node types
-    pub const Document = void;
+    pub const document = void;
     pub const heading = struct {
         level: u8,
     };
