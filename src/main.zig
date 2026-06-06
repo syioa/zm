@@ -25,6 +25,10 @@ fn printAST(parser: *Parser) !void {
             std.debug.print("Bold text: {s}\n", .{(try parser.getTextPayload(nodes.*[id].first_child)).value});
         } else if (nodes.*[id].tag == .italic) {
             std.debug.print("Italic text: {s}\n", .{(try parser.getTextPayload(nodes.*[id].first_child)).value});
+        } else if (nodes.*[id].tag == .blockquote) {
+            std.debug.print("Blockquote's text: {s}\n", .{
+                (try parser.getTextPayload(nodes.*[id].first_child)).value,
+            });
         } else if (nodes.*[id].tag == .paragraph) {
             count += 1;
         }

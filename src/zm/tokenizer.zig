@@ -7,19 +7,25 @@ pub const TokenType = enum {
     h4,
     h5,
     h6,
+
     bold_marker,
     italic_marker,
-    newline,
     text,
+
+    newline,
+
     link_open,
     link_mid,
     link_close,
+
+    blockquote_marker,
 };
 
 pub const State = enum {
+    none,
+
     link_text,
     link_url,
-    none,
 };
 
 pub const Token = struct {
@@ -59,6 +65,8 @@ pub const Tokenizer = struct {
             if (self.matches("### ")) return self.makeToken(.h3, 4, start);
             if (self.matches("## ")) return self.makeToken(.h2, 3, start);
             if (self.peek(1) == ' ') return self.makeToken(.h1, 2, start);
+        } else if (char == '>' and self.peek(1) == ' ') {
+            return self.makeToken(.blockquote_marker, 2, start);
         }
 
         return null;

@@ -10,3 +10,5 @@ What is this - # heading?
 #### What if links contain ')' - we have to escape them for now
 [C Wiki](https://en.wikipedia.org/wiki/C_(programming_language\))
 
+> Some blockquote text
+> Some *bold text inside blockquote*

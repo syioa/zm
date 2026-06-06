@@ -36,6 +36,8 @@ pub const Parser = struct {
                 .h4 => _ = try self.parseHeading(4, root_idx),
                 .h5 => _ = try self.parseHeading(5, root_idx),
                 .h6 => _ = try self.parseHeading(6, root_idx),
+                .blockquote_marker => _ = try self.parseBlockquote(root_idx),
+
                 .newline => self.index += 1,
                 .text, .bold_marker, .italic_marker, .link_open, .link_close, .link_mid => _ = try self.parseParagraph(root_idx),
             }
@@ -67,6 +69,21 @@ pub const Parser = struct {
         return node_idx;
     }
 
+    fn parseBlockquote(self: *Parser, parent_idx: u32) !u32 {
+        self.index += 1;
+        const node_idx = try self.appendNode(.{ .tag = .blockquote, .payload = null, .parent_idx = parent_idx, });
+
+        const children_start_idx = self.nodes.items.len;
+
+        while (self.index < self.tokens.len and self.tokens[self.index].type != .newline) {
+            _ = try self.parseInline(node_idx);
+        }
+        if (self.index < self.tokens.len) self.index += 1; // newline
+
+        self.bindChildren(node_idx, children_start_idx);
+        return node_idx;
+    }
+
     fn parseParagraph(self: *Parser, parent_idx: u32) !u32 {
         const node_idx = try self.appendNode(.{ .tag = .paragraph, .payload = null, .parent_idx = parent_idx });
 
@@ -75,7 +92,7 @@ pub const Parser = struct {
         outer: while (self.index < self.tokens.len) {
             const t = self.tokens[self.index];
             switch (t.type) {
-                .h1, .h2, .h3, .h4, .h5, .h6 => break :outer,
+                .h1, .h2, .h3, .h4, .h5, .h6, .blockquote_marker => break :outer,
                 .newline => {
                     if (self.tokens[self.index + 1].type == .newline) break :outer;
                 }, // intentional, to be changed later

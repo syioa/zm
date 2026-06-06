@@ -8,6 +8,7 @@ pub const NodeTag = enum {
     bold,
     italic,
     link,
+    blockquote,
 };
 
 pub const Node = struct {
@@ -22,6 +23,7 @@ pub const Node = struct {
     /// Payload is an index to special properties of current Node
     payload: ?u32,
 
+    // Properties of All Node types
     pub const Document = void;
     pub const heading = struct {
         level: u8,
@@ -34,4 +36,5 @@ pub const Node = struct {
         url: []const u8,
     };
     pub const bold = void;
+    pub const blockquote = void;
 };
