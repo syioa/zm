@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.0.2 - 2026-06-06
+#### Features
+- implement blockquotes - (43c19bc) - syioa
+#### Refactoring
+- new paragraphs start with two newlines - (4db7e38) - syioa
+
+- - -
+
 ## 0.0.1 - 2026-06-05
 #### Features
 - (**lexer**) add support for escaping '*' and '_' - (6432e97) - syioa
