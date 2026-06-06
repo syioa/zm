@@ -38,7 +38,14 @@ pub const Parser = struct {
                 .h6 => _ = try self.parseHeading(6, root_idx),
                 .blockquote_marker => _ = try self.parseBlockquote(root_idx),
 
-                .newline => self.index += 1,
+                .newline => {
+                    self.index += 1;
+                    try self.appendNode(.{
+                        .tag = .newline,
+                        .payload = null,
+                        .parent_idx = root_idx,
+                    });
+                },
                 .text, .bold_marker, .italic_marker, .link_open, .link_close, .link_mid => _ = try self.parseParagraph(root_idx),
             }
         }
@@ -116,10 +123,8 @@ pub const Parser = struct {
         const token = self.tokens[self.index];
         switch (token.type) {
             .newline => {
-                // maybe rather than creating a text Node, we should create a special newline Node
                 self.index += 1;
-                const payload_idx = try self.appendTextPayload(.{ .value = "\n" });
-                return self.appendNode(.{ .tag = .text, .payload = payload_idx, .parent_idx = parent_idx });
+                return self.appendNode(.{ .tag = .newline, .payload = null, .parent_idx = parent_idx, });
             },
             .text => {
                 self.index += 1;

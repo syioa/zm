@@ -5,6 +5,7 @@ pub const NodeTag = enum {
     heading,
     paragraph,
     text,
+    newline,
     bold,
     italic,
     link,
@@ -37,4 +38,5 @@ pub const Node = struct {
     };
     pub const bold = void;
     pub const blockquote = void;
+    // pub const newline = void;
 };
