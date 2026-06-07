@@ -2,9 +2,10 @@ const std = @import("std");
 const Token = @import("tokenizer.zig").Token;
 const TokenType = @import("tokenizer.zig").TokenType;
 const Node = @import("AST.zig").Node;
+const Allocator = std.mem.Allocator;
 
 pub const Parser = struct {
-    allocator: std.mem.Allocator,
+    allocator: Allocator,
     tokens: []Token,
     // The single contiguous array backing the entire tree
     nodes: std.ArrayList(Node),
@@ -21,7 +22,7 @@ pub const Parser = struct {
         self.link_payloads.deinit(self.*.allocator);
     }
 
-    pub fn parse(self: *Parser) !u32 {
+    pub fn parse(self: *Parser) Allocator.Error!u32 {
         // The root node is always the first element in our flat array
         const root_idx = try self.appendNode(.{ .tag = .document, .payload = null, .parent_idx = null });
 
@@ -56,7 +57,7 @@ pub const Parser = struct {
         return root_idx;
     }
 
-    fn parseHeading(self: *Parser, level: u8, parent_idx: u32) !u32 {
+    fn parseHeading(self: *Parser, level: u8, parent_idx: u32) Allocator.Error!u32 {
         self.index += 1; // Consume heading token
         const payload_idx = try self.appendHeadingPayload(.{ .level = level });
         const node_idx = try self.appendNode(.{
@@ -76,7 +77,7 @@ pub const Parser = struct {
         return node_idx;
     }
 
-    fn parseBlockquote(self: *Parser, parent_idx: u32) !u32 {
+    fn parseBlockquote(self: *Parser, parent_idx: u32) Allocator.Error!u32 {
         self.index += 1;
         const node_idx = try self.appendNode(.{
             .tag = .blockquote,
@@ -95,7 +96,7 @@ pub const Parser = struct {
         return node_idx;
     }
 
-    fn parseParagraph(self: *Parser, parent_idx: u32) !u32 {
+    fn parseParagraph(self: *Parser, parent_idx: u32) Allocator.Error!u32 {
         const node_idx = try self.appendNode(.{ .tag = .paragraph, .payload = null, .parent_idx = parent_idx });
 
         const children_start_idx = self.nodes.items.len;
@@ -123,7 +124,7 @@ pub const Parser = struct {
         return node_idx;
     }
 
-    fn parseInline(self: *Parser, parent_idx: u32) !u32 {
+    fn parseInline(self: *Parser, parent_idx: u32) Allocator.Error!u32 {
         const token = self.tokens[self.index];
         switch (token.type) {
             .newline => {
@@ -201,7 +202,7 @@ pub const Parser = struct {
         }
     }
 
-    fn parseLink(self: *Parser, parent_idx: u32) !u32 {
+    fn parseLink(self: *Parser, parent_idx: u32) Allocator.Error!u32 {
         self.index += 1; // consume .link_open
 
         const link_idx = try self.appendNode(.{
@@ -248,7 +249,7 @@ pub const Parser = struct {
     /// Appends a node to the `nodes` ArrayList and returns its index
     ///
     /// This functions allocates memory if necessary
-    fn appendNode(self: *Parser, node: Node) !u32 {
+    fn appendNode(self: *Parser, node: Node) Allocator.Error!u32 {
         const idx: u32 = @intCast(self.nodes.items.len);
         try self.nodes.append(self.*.allocator, node);
         return idx;
@@ -257,7 +258,7 @@ pub const Parser = struct {
     /// Appends a heading payload and returns its index
     ///
     /// This function allocates memory if necessary
-    fn appendHeadingPayload(self: *Parser, payload: Node.heading) !u32 {
+    fn appendHeadingPayload(self: *Parser, payload: Node.heading) Allocator.Error!u32 {
         const idx: u32 = @intCast(self.heading_payloads.items.len);
         try self.heading_payloads.append(self.*.allocator, payload);
         return idx;
@@ -266,7 +267,7 @@ pub const Parser = struct {
     /// Appends a text payload and returns its index
     ///
     /// This function allocates memory if necessary
-    fn appendTextPayload(self: *Parser, payload: Node.text) !u32 {
+    fn appendTextPayload(self: *Parser, payload: Node.text) Allocator.Error!u32 {
         const idx: u32 = @intCast(self.text_payloads.items.len);
         try self.text_payloads.append(self.*.allocator, payload);
         return idx;
@@ -275,14 +276,18 @@ pub const Parser = struct {
     /// Appends a link payload and returns its index
     ///
     /// This function allocates memory if necessary
-    fn appendLinkPayload(self: *Parser, payload: Node.link) !u32 {
+    fn appendLinkPayload(self: *Parser, payload: Node.link) Allocator.Error!u32 {
         const idx: u32 = @intCast(self.link_payloads.items.len);
         try self.link_payloads.append(self.*.allocator, payload);
         return idx;
     }
 
     /// Get the properties of the heading node whose index is `node_idx`
-    pub fn getHeadingPayload(self: *Parser, node_idx: ?u32) !Node.heading {
+    pub fn getHeadingPayload(self: *Parser, node_idx: ?u32) error{
+        IndexOutOfBounds,
+        HeadingTagMismatch,
+        IndexFoundNull,
+    }!Node.heading {
         if (node_idx) |idx| {
             if (idx >= self.nodes.items.len) return error.IndexOutOfBounds;
             if (self.nodes.items[idx].tag != .heading) return error.HeadingTagMismatch;
@@ -294,7 +299,11 @@ pub const Parser = struct {
     }
 
     /// Get the properties of the text node whose index is `node_idx`
-    pub fn getTextPayload(self: *Parser, node_idx: ?u32) !Node.text {
+    pub fn getTextPayload(self: *Parser, node_idx: ?u32) error{
+        IndexOutOfBounds,
+        TextTagMismatch,
+        IndexFoundNull,
+    }!Node.text {
         if (node_idx) |idx| {
             if (idx >= self.nodes.items.len) return error.IndexOutOfBounds;
             if (self.nodes.items[idx].tag != .text) return error.TextTagMismatch;
@@ -306,7 +315,11 @@ pub const Parser = struct {
     }
 
     /// Get the properties of the link node whose index is `node_idx`
-    pub fn getLinkPayload(self: *Parser, node_idx: ?u32) !Node.link {
+    pub fn getLinkPayload(self: *Parser, node_idx: ?u32) error{
+        IndexOutOfBounds,
+        LinkTagMismatch,
+        IndexFoundNull,
+    }!Node.link {
         if (node_idx) |idx| {
             if (idx >= self.nodes.items.len) return error.IndexOutOfBounds;
             if (self.nodes.items[idx].tag != .link) return error.LinkTagMismatch;
