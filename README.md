@@ -22,8 +22,14 @@ Features are not complete yet. Still `zm` can tokenize and parse the following t
 
 - Bold via `*` char wrapped around the word, phrase, or sentence.
 - Italic via `_` char wrapped around the word, phrase or sentence.
-- Links via `[text](url)` syntax, where text wouldn't be styled if you put any styling attribute inside the link syntax. If you want to style it wrap the whole link syntax around the styling attribute. Something like this, `*[bold link](some url)*`.
+- Links via `[text](url)` syntax.
 - Blockquotes via the usual `> ` syntax, remember that a space after the `>` char is important, without it a blockquote won't be created.
+
+
+#### List of Deliberate Exclusions
+
+- Nested blocquotes are not supported.
+- Link text can't contain bold or italic modifiers, if you want to make your link bold add the modifiers outside of the link like this - `*[some text](https://someurl.com)*`
 
 ## Usage
 
