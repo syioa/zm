@@ -78,7 +78,11 @@ pub const Parser = struct {
 
     fn parseBlockquote(self: *Parser, parent_idx: u32) !u32 {
         self.index += 1;
-        const node_idx = try self.appendNode(.{ .tag = .blockquote, .payload = null, .parent_idx = parent_idx, });
+        const node_idx = try self.appendNode(.{
+            .tag = .blockquote,
+            .payload = null,
+            .parent_idx = parent_idx,
+        });
 
         const children_start_idx = self.nodes.items.len;
 
@@ -124,7 +128,11 @@ pub const Parser = struct {
         switch (token.type) {
             .newline => {
                 self.index += 1;
-                return self.appendNode(.{ .tag = .newline, .payload = null, .parent_idx = parent_idx, });
+                return self.appendNode(.{
+                    .tag = .newline,
+                    .payload = null,
+                    .parent_idx = parent_idx,
+                });
             },
             .text => {
                 self.index += 1;
