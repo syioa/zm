@@ -40,7 +40,7 @@ pub const Parser = struct {
 
                 .newline => {
                     self.index += 1;
-                    try self.appendNode(.{
+                    _ = try self.appendNode(.{
                         .tag = .newline,
                         .payload = null,
                         .parent_idx = root_idx,
