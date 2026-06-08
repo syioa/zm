@@ -10,6 +10,7 @@ pub const NodeTag = enum {
     italic,
     link,
     blockquote,
+    unordered_list_item,
 };
 
 pub const Node = struct {
@@ -39,4 +40,7 @@ pub const Node = struct {
     pub const bold = void;
     pub const blockquote = void;
     // pub const newline = void;
+    pub const unordered_list_item = struct {
+        depth: u16,
+    };
 };

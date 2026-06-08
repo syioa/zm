@@ -29,6 +29,11 @@ fn printAST(parser: *Parser) !void {
             std.debug.print("Blockquote's text: {s}\n", .{
                 (try parser.getTextPayload(nodes.*[id].first_child)).value,
             });
+        } else if (nodes.*[id].tag == .unordered_list_item) {
+            std.debug.print("ULI depth: {}    ULI first child: {s}\n", .{
+                (try parser.getULIPayload(id)).depth,
+                (try parser.getTextPayload(nodes.*[id].first_child)).value,
+            });
         } else if (nodes.*[id].tag == .paragraph) {
             count += 1;
         }
@@ -65,6 +70,7 @@ pub fn main(init: std.process.Init) !void {
     defer token_list.deinit(allocator);
 
     while (tokenizer.next()) |token| {
+        // std.debug.print("{}\n", .{token.type});
         try token_list.append(allocator, token);
     }
 
@@ -76,6 +82,7 @@ pub fn main(init: std.process.Init) !void {
         .heading_payloads = try std.ArrayList(Node.heading).initCapacity(allocator, 10),
         .text_payloads = try std.ArrayList(Node.text).initCapacity(allocator, 10),
         .link_payloads = try std.ArrayList(Node.link).initCapacity(allocator, 5),
+        .ul_payloads = try std.ArrayList(Node.unordered_list_item).initCapacity(allocator, 5),
     };
     defer parser.deinit();
 

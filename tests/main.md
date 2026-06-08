@@ -12,3 +12,7 @@ What is this - # heading?
 
 > Some blockquote text
 > Some *bold text inside blockquote*
+
+- A list item!
+    - Nested list item!
+

@@ -14,12 +14,14 @@ pub const Parser = struct {
     heading_payloads: std.ArrayList(Node.heading),
     text_payloads: std.ArrayList(Node.text),
     link_payloads: std.ArrayList(Node.link),
+    ul_payloads: std.ArrayList(Node.unordered_list_item),
 
     pub fn deinit(self: *Parser) void {
         self.nodes.deinit(self.*.allocator);
         self.heading_payloads.deinit(self.*.allocator);
         self.text_payloads.deinit(self.*.allocator);
         self.link_payloads.deinit(self.*.allocator);
+        self.ul_payloads.deinit(self.*.allocator);
     }
 
     pub fn parse(self: *Parser) Allocator.Error!u32 {
@@ -47,7 +49,7 @@ pub const Parser = struct {
                         .parent_idx = root_idx,
                     });
                 },
-                .text, .bold_marker, .italic_marker, .link_open, .link_close, .link_mid => _ = try self.parseParagraph(root_idx),
+                .text, .bold_marker, .italic_marker, .link_open, .link_close, .link_mid, .unordered_list_item, .indent => _ = try self.parseParagraph(root_idx),
             }
         }
 
@@ -107,8 +109,16 @@ pub const Parser = struct {
                 .h1, .h2, .h3, .h4, .h5, .h6, .blockquote_marker => break :outer,
                 .newline => {
                     if (self.tokens[self.index + 1].type == .newline) break :outer;
-                }, // intentional, to be changed later
-                .bold_marker, .italic_marker, .text, .link_open, .link_close, .link_mid => {},
+                },
+                .bold_marker,
+                .italic_marker,
+                .text,
+                .link_open,
+                .link_close,
+                .link_mid,
+                .unordered_list_item,
+                .indent,
+                => {},
             }
             _ = try self.parseInline(node_idx);
         }
@@ -134,6 +144,9 @@ pub const Parser = struct {
                     .payload = null,
                     .parent_idx = parent_idx,
                 });
+            },
+            .unordered_list_item, .indent => {
+                return self.parseULItem(parent_idx);
             },
             .text => {
                 self.index += 1;
@@ -244,6 +257,65 @@ pub const Parser = struct {
         return if (self.tokens[peek_idx].type != .link_close) false else true;
     }
 
+    fn parseULItem(self: *Parser, parent_idx: u32) Allocator.Error!u32 {
+        var depth: u16 = 0;
+        while (self.tokens[self.index].type == .indent) {
+            self.index += 1;
+            depth += 1;
+        }
+
+        if (self.tokens[self.index].type != .unordered_list_item) {
+            if (depth != 0) self.index -= depth;
+
+            return self.appendNode(.{
+                .tag = .text,
+                .payload = try self.appendTextPayload(.{ .value = self.tokens[self.index].slice }),
+                .parent_idx = parent_idx,
+            });
+        }
+
+        var previous_token_type: TokenType = .newline;
+        if (self.index != 0) {
+            previous_token_type = self.tokens[self.index - 1].type;
+        }
+
+        switch (previous_token_type) {
+            .newline, .indent, .blockquote_marker => {
+                self.index += 1;
+                const node_idx = try self.appendNode(.{
+                    .tag = .unordered_list_item,
+                    .payload = try self.appendULIPayload(.{ .depth = depth }),
+                    .parent_idx = parent_idx,
+                });
+
+                const children_start_idx = self.nodes.items.len;
+
+                outer: while (self.index < self.tokens.len) {
+                    switch (self.tokens[self.index].type) {
+                        .newline => {
+                            if (self.tokens[self.index + 1].type == .newline) break :outer;
+                        },
+                        .blockquote_marker => break :outer,
+                        else => {},
+                    }
+                    _ = try self.parseInline(node_idx);
+                }
+                if (self.index < self.tokens.len and
+                    self.tokens[self.index].type == .newline and
+                    self.tokens[self.index + 1].type == .newline)
+                {
+                    self.index += 2;
+                } else self.index += 1;
+
+                self.bindChildren(node_idx, children_start_idx);
+                return node_idx;
+            },
+            else => {
+                return self.appendNode(.{ .tag = .text, .payload = try self.appendTextPayload(.{ .value = "- " }) });
+            },
+        }
+    }
+
     // --- DOD Helper Methods ---
 
     /// Appends a node to the `nodes` ArrayList and returns its index
@@ -279,6 +351,15 @@ pub const Parser = struct {
     fn appendLinkPayload(self: *Parser, payload: Node.link) Allocator.Error!u32 {
         const idx: u32 = @intCast(self.link_payloads.items.len);
         try self.link_payloads.append(self.*.allocator, payload);
+        return idx;
+    }
+
+    /// Appends an unordered list item payload and returns its index
+    ///
+    /// This function allocates memory if necessary
+    fn appendULIPayload(self: *Parser, payload: Node.unordered_list_item) Allocator.Error!u32 {
+        const idx: u32 = @intCast(self.ul_payloads.items.len);
+        try self.ul_payloads.append(self.*.allocator, payload);
         return idx;
     }
 
@@ -326,6 +407,22 @@ pub const Parser = struct {
 
             if (self.nodes.items[idx].payload) |payload| {
                 return self.link_payloads.items[payload];
+            } else unreachable;
+        } else return error.IndexFoundNull;
+    }
+
+    /// Get the properties of the unordered list item node whose index is `node_idx`
+    pub fn getULIPayload(self: *Parser, node_idx: ?u32) error{
+        IndexOutOfBounds,
+        ULItemTagMismatch,
+        IndexFoundNull,
+    }!Node.unordered_list_item {
+        if (node_idx) |idx| {
+            if (idx >= self.nodes.items.len) return error.IndexOutOfBounds;
+            if (self.nodes.items[idx].tag != .unordered_list_item) return error.ULItemTagMismatch;
+
+            if (self.nodes.items[idx].payload) |payload| {
+                return self.ul_payloads.items[payload];
             } else unreachable;
         } else return error.IndexFoundNull;
     }
