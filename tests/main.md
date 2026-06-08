@@ -15,4 +15,3 @@ What is this - # heading?
 
 - A list item!
     - Nested list item!
-

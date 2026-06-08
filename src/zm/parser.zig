@@ -293,6 +293,7 @@ pub const Parser = struct {
                 outer: while (self.index < self.tokens.len) {
                     switch (self.tokens[self.index].type) {
                         .newline => {
+                            if (self.index + 1 >= self.tokens.len) break :outer;
                             if (self.tokens[self.index + 1].type == .newline) break :outer;
                         },
                         .blockquote_marker => break :outer,
@@ -301,11 +302,12 @@ pub const Parser = struct {
                     _ = try self.parseInline(node_idx);
                 }
                 if (self.index < self.tokens.len and
-                    self.tokens[self.index].type == .newline and
-                    self.tokens[self.index + 1].type == .newline)
+                    self.tokens[self.index].type == .newline)
                 {
-                    self.index += 2;
-                } else self.index += 1;
+                    self.index += 1;
+                    if (self.index+1 < self.tokens.len and
+                        self.tokens[self.index+1].type == .newline) self.index += 1;
+                }
 
                 self.bindChildren(node_idx, children_start_idx);
                 return node_idx;
