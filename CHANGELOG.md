@@ -2,6 +2,25 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.0.4 - 2026-06-08
+#### Features
+- add unordered lists - (4d962f8) - syioa
+#### Bug Fixes
+- (**parser**) index out of bounds error - (0050283) - syioa
+- (**parser**) use unused return value - (fe2bd47) - syioa
+#### Documentation
+- update Features spec - (c1ecf29) - syioa
+#### Refactoring
+- (**ast**) lower case of Document - (6736262) - syioa
+- (**parser**) ditch inferred error types - (3c2ff16) - syioa
+- (**parser**) add a new newline Node - (622a349) - syioa
+#### Miscellaneous Chores
+- update README.md - (f91b65c) - syioa
+#### Style
+- format parser.zig - (487d1bf) - syioa
+
+- - -
+
 ## 0.0.2 - 2026-06-06
 #### Features
 - implement blockquotes - (43c19bc) - syioa
