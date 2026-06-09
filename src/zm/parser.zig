@@ -14,14 +14,14 @@ pub const Parser = struct {
     heading_payloads: std.ArrayList(Node.heading),
     text_payloads: std.ArrayList(Node.text),
     link_payloads: std.ArrayList(Node.link),
-    ul_payloads: std.ArrayList(Node.unordered_list_item),
+    uli_payloads: std.ArrayList(Node.unordered_list_item),
 
     pub fn deinit(self: *Parser) void {
         self.nodes.deinit(self.*.allocator);
         self.heading_payloads.deinit(self.*.allocator);
         self.text_payloads.deinit(self.*.allocator);
         self.link_payloads.deinit(self.*.allocator);
-        self.ul_payloads.deinit(self.*.allocator);
+        self.uli_payloads.deinit(self.*.allocator);
     }
 
     pub fn parse(self: *Parser) Allocator.Error!u32 {
@@ -360,8 +360,8 @@ pub const Parser = struct {
     ///
     /// This function allocates memory if necessary
     fn appendULIPayload(self: *Parser, payload: Node.unordered_list_item) Allocator.Error!u32 {
-        const idx: u32 = @intCast(self.ul_payloads.items.len);
-        try self.ul_payloads.append(self.*.allocator, payload);
+        const idx: u32 = @intCast(self.uli_payloads.items.len);
+        try self.uli_payloads.append(self.*.allocator, payload);
         return idx;
     }
 
@@ -424,7 +424,7 @@ pub const Parser = struct {
             if (self.nodes.items[idx].tag != .unordered_list_item) return error.ULItemTagMismatch;
 
             if (self.nodes.items[idx].payload) |payload| {
-                return self.ul_payloads.items[payload];
+                return self.uli_payloads.items[payload];
             } else unreachable;
         } else return error.IndexFoundNull;
     }

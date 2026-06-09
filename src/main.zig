@@ -82,7 +82,7 @@ pub fn main(init: std.process.Init) !void {
         .heading_payloads = try std.ArrayList(Node.heading).initCapacity(allocator, 10),
         .text_payloads = try std.ArrayList(Node.text).initCapacity(allocator, 10),
         .link_payloads = try std.ArrayList(Node.link).initCapacity(allocator, 5),
-        .ul_payloads = try std.ArrayList(Node.unordered_list_item).initCapacity(allocator, 5),
+        .uli_payloads = try std.ArrayList(Node.unordered_list_item).initCapacity(allocator, 5),
     };
     defer parser.deinit();
 
