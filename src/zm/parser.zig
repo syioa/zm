@@ -108,6 +108,7 @@ pub const Parser = struct {
             switch (t.type) {
                 .h1, .h2, .h3, .h4, .h5, .h6, .blockquote_marker => break :outer,
                 .newline => {
+                    if (self.index + 1 >= self.tokens.len) break :outer;
                     if (self.tokens[self.index + 1].type == .newline) break :outer;
                 },
                 .bold_marker,
@@ -124,10 +125,11 @@ pub const Parser = struct {
         }
 
         if (self.index < self.tokens.len and
-            self.tokens[self.index].type == .newline and
-            self.tokens[self.index + 1].type == .newline)
+            self.tokens[self.index].type == .newline)
         {
-            self.index += 2;
+            self.index += 1;
+            if (self.index + 1 < self.tokens.len and
+                self.tokens[self.index + 1].type == .newline) self.index += 1;
         }
 
         self.bindChildren(node_idx, children_start_idx);
@@ -305,8 +307,8 @@ pub const Parser = struct {
                     self.tokens[self.index].type == .newline)
                 {
                     self.index += 1;
-                    if (self.index+1 < self.tokens.len and
-                        self.tokens[self.index+1].type == .newline) self.index += 1;
+                    if (self.index + 1 < self.tokens.len and
+                        self.tokens[self.index + 1].type == .newline) self.index += 1;
                 }
 
                 self.bindChildren(node_idx, children_start_idx);
