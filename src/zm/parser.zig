@@ -128,8 +128,8 @@ pub const Parser = struct {
             self.tokens[self.index].type == .newline)
         {
             self.index += 1;
-            if (self.index + 1 < self.tokens.len and
-                self.tokens[self.index + 1].type == .newline) self.index += 1;
+            if (self.index < self.tokens.len and
+                self.tokens[self.index].type == .newline) self.index += 1;
         }
 
         self.bindChildren(node_idx, children_start_idx);
