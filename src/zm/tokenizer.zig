@@ -43,7 +43,7 @@ pub const Tokenizer = struct {
     index: usize = 0,
     /// Specifies the current tokenizing state
     state: State = .none,
-    text_on_line: bool = false,
+    line_has_text: bool = false,
 
     pub fn next(self: *Tokenizer) ?Token {
         if (self.index >= self.input.len) return null;
@@ -52,10 +52,16 @@ pub const Tokenizer = struct {
         const char = self.input[self.index];
 
         if (self.atLineStart()) {
-            if (self.matchBlockToken(char, start)) |token| return token;
+            if (self.matchBlockToken(char, start)) |token| {
+                self.line_has_text = if (token.type != .indent and token.type != .blockquote_marker) true else false;
+                return token;
+            }
         }
 
-        if (self.matchInlineToken(char, start)) |token| return token;
+        if (self.matchInlineToken(char, start)) |token| {
+            self.line_has_text = if (token.type != .indent and token.type != .newline) true else false;
+            return token;
+        }
 
         //TODO: check if infinite loops are possible
 
@@ -65,8 +71,6 @@ pub const Tokenizer = struct {
 
     fn matchBlockToken(self: *Tokenizer, char: u8, start: usize) ?Token {
         if (char == '#' and self.state == .none) {
-            self.text_on_line = true;
-
             if (self.matches("###### ")) return self.makeToken(.h6, 7, start);
             if (self.matches("##### ")) return self.makeToken(.h5, 6, start);
             if (self.matches("#### ")) return self.makeToken(.h4, 5, start);
@@ -74,12 +78,8 @@ pub const Tokenizer = struct {
             if (self.matches("## ")) return self.makeToken(.h2, 3, start);
             if (self.peek(1) == ' ') return self.makeToken(.h1, 2, start);
         } else if (char == '>' and self.peek(1) == ' ') {
-            self.text_on_line = false;
-
             return self.makeToken(.blockquote_marker, 2, start);
         } else if (char == ' ') {
-            self.text_on_line = false;
-
             var c = self.input[self.index];
             var whitespace_count: u32 = 0;
             while (c == ' ') {
@@ -91,19 +91,18 @@ pub const Tokenizer = struct {
                 return self.makeToken(.text, whitespace_count, start);
             }
 
-            if (whitespace_count > 4) self.state = .indent;
+            if (whitespace_count > 4) {
+                self.state = .indent;
+                self.line_has_text = false;
+            }
             return self.makeToken(.indent, 4, start);
         }
-
-        self.text_on_line = false;
 
         return null;
     }
 
     fn matchInlineToken(self: *Tokenizer, char: u8, start: usize) ?Token {
         if (self.state == .indent) {
-            self.text_on_line = false;
-
             var c = self.input[self.index];
             var whitespace_count: u32 = 0;
             while (c == ' ') {
@@ -111,16 +110,16 @@ pub const Tokenizer = struct {
                 c = self.input[self.index + whitespace_count];
             }
 
-            if (whitespace_count == 4) self.state = .none;
-
-            return self.makeToken(.indent, 4, start);
+            if (whitespace_count >= 4) {
+                if (whitespace_count == 4) self.state = .none;
+                return self.makeToken(.indent, 4, start);
+            }
         }
         if (self.state == .none) {
-            if (char == '-' and self.peek(1) == ' ' and self.text_on_line == false) {
+            if (char == '-' and self.peek(1) == ' ' and self.line_has_text == false) {
                 return self.makeToken(.unordered_list_item, 2, start);
             }
 
-            self.text_on_line = true;
             if (char == '\n') return self.makeToken(.newline, 1, start);
             if (char == '*') return self.makeToken(.bold_marker, 1, start);
             if (char == '_') return self.makeToken(.italic_marker, 1, start);
@@ -129,7 +128,6 @@ pub const Tokenizer = struct {
                 return self.makeToken(.link_open, 1, start);
             }
         }
-        self.text_on_line = true;
 
         if (self.state == .link_text) {
             if (self.matches("](")) {
@@ -149,6 +147,7 @@ pub const Tokenizer = struct {
 
     fn consumeText(self: *Tokenizer, start: usize) Token {
         var char = self.input[self.index];
+        self.line_has_text = true;
 
         outer: while (self.index < self.input.len) {
             self.consumeEscapeChar(self.input[self.index]);
@@ -167,9 +166,7 @@ pub const Tokenizer = struct {
                 .link_url => {
                     if (char == ')') break :outer;
                 },
-                .indent => {
-                    self.text_on_line = true;
-                },
+                .indent => {},
             }
 
             self.index += 1;
