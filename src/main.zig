@@ -6,6 +6,8 @@ const TokenType = zm.tokenizer.TokenType;
 const Tokenizer = zm.tokenizer.Tokenizer;
 const Node = zm.AST.Node;
 const Parser = zm.parser.Parser;
+const renderer = zm.render;
+const OpenNode = renderer.OpenNode;
 
 // ============================================================
 // AST PRINTER
@@ -70,7 +72,6 @@ pub fn main(init: std.process.Init) !void {
     defer token_list.deinit(allocator);
 
     while (tokenizer.next()) |token| {
-        // std.debug.print("{}\n", .{token.type});
         try token_list.append(allocator, token);
     }
 
@@ -91,5 +92,24 @@ pub fn main(init: std.process.Init) !void {
     _ = root_idx;
 
     // We just pass the underlying slice of the ArrayList and the root index
-    try printAST(&parser);
+    // try printAST(&parser);
+
+    var buf: [2000]u8 = undefined;
+    var file_writer = std.Io.File.stdout().writer(init.io, &buf);
+    const writer = &file_writer.interface;
+
+    var render = renderer.HTMLRenderer {
+        .allocator = allocator,
+        .nodes = parser.nodes.items,
+        .heading_payloads = parser.heading_payloads.items,
+        .link_payloads = parser.link_payloads.items,
+        .text_payloads = parser.text_payloads.items,
+        .uli_payloads = parser.uli_payloads.items,
+        .stack = try std.ArrayList(OpenNode).initCapacity(allocator, 5),
+        .properties = .{ .title = "Some dummy title" },
+    };
+
+    try render.render(writer);
+
+    try writer.flush();
 }
