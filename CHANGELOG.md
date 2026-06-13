@@ -2,6 +2,20 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.1.0 - 2026-06-13
+#### Features
+- implement basic conversion strategy - (84faae6) - syioa
+#### Bug Fixes
+- (**parser**) index out of bounds error - (aae32fe) - syioa
+#### Performance Improvements
+- (**lexer**) consume indents and uli faster - (20df4f7) - syioa
+#### Refactoring
+- (**parser**) consume 2 newlines after a unordered list item - (b771619) - syioa
+- (**parser**) consume 2 newlines after the paragraph - (5d91d1d) - syioa
+- (**parser**) rename ul_payloads to uli_payloads - (9cfb400) - syioa
+
+- - -
+
 ## 0.0.4 - 2026-06-08
 #### Features
 - add unordered lists - (4d962f8) - syioa
