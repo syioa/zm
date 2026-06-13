@@ -1,7 +1,9 @@
+const zm = @import("../root.zig");
 const std = @import("std");
-const Token = @import("tokenizer.zig").Token;
-const TokenType = @import("tokenizer.zig").TokenType;
-const Node = @import("AST.zig").Node;
+
+const Token = zm.tokenizer.Token;
+const TokenType = zm.tokenizer.TokenType;
+const Node = zm.AST.Node;
 const Allocator = std.mem.Allocator;
 
 pub const Parser = struct {

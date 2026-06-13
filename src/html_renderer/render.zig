@@ -1,5 +1,6 @@
-const std = @import("std");
 const zm = @import("../root.zig");
+const std = @import("std");
+
 const Node = zm.AST.Node;
 const Allocator = std.mem.Allocator;
 

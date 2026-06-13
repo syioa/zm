@@ -1,5 +1,5 @@
-const std = @import("std");
 const zm = @import("zm");
+const std = @import("std");
 
 const Token = zm.tokenizer.Token;
 const TokenType = zm.tokenizer.TokenType;
