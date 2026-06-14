@@ -2,6 +2,16 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.1.1 - 2026-06-14
+#### Features
+- basic cli args parsing - (4050524) - syioa
+#### Refactoring
+- relocate printAST function - (4d4b268) - syioa
+- improve imports - (eb8fba2) - syioa
+- rename `tests` folder to `markdown_documents` - (2ea9599) - syioa
+
+- - -
+
 ## 0.1.0 - 2026-06-13
 #### Features
 - implement basic conversion strategy - (84faae6) - syioa
