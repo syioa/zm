@@ -9,47 +9,6 @@ const Parser = zm.parser.Parser;
 const renderer = zm.render;
 const OpenNode = renderer.OpenNode;
 
-// ============================================================
-// AST PRINTER
-// ============================================================
-
-fn printAST(parser: *Parser) !void {
-    const nodes = &parser.nodes.items;
-    var id: u32 = 0;
-    var count: u32 = 0;
-    while (id < nodes.len) {
-        if (nodes.*[id].tag == .link) {
-            std.debug.print("Link text: {s}    Link url: {s}\n", .{
-                (try parser.getTextPayload(nodes.*[id].first_child)).value,
-                (try parser.getLinkPayload(id)).url,
-            });
-        } else if (nodes.*[id].tag == .bold) {
-            std.debug.print("Bold text: {s}\n", .{(try parser.getTextPayload(nodes.*[id].first_child)).value});
-        } else if (nodes.*[id].tag == .italic) {
-            std.debug.print("Italic text: {s}\n", .{(try parser.getTextPayload(nodes.*[id].first_child)).value});
-        } else if (nodes.*[id].tag == .blockquote) {
-            std.debug.print("Blockquote's text: {s}\n", .{
-                (try parser.getTextPayload(nodes.*[id].first_child)).value,
-            });
-        } else if (nodes.*[id].tag == .unordered_list_item) {
-            std.debug.print("ULI depth: {}    ULI first child: {s}\n", .{
-                (try parser.getULIPayload(id)).depth,
-                (try parser.getTextPayload(nodes.*[id].first_child)).value,
-            });
-        } else if (nodes.*[id].tag == .paragraph) {
-            count += 1;
-        }
-
-        id += 1;
-    }
-
-    std.debug.print("Number of paragraphs: {}\n", .{count});
-}
-
-// ============================================================
-// MAIN
-// ============================================================
-
 pub fn main(init: std.process.Init) !void {
     var arena = std.heap.ArenaAllocator.init(init.gpa);
     defer arena.deinit();
@@ -90,9 +49,6 @@ pub fn main(init: std.process.Init) !void {
     // root_idx is just a u32 pointing to index 0
     const root_idx = try parser.parse();
     _ = root_idx;
-
-    // We just pass the underlying slice of the ArrayList and the root index
-    // try printAST(&parser);
 
     var buf: [2000]u8 = undefined;
     var file_writer = std.Io.File.stdout().writer(init.io, &buf);
