@@ -1,12 +1,13 @@
 const zm = @import("zm");
 const std = @import("std");
 
+const renderer = zm.render;
+const Args = zm.args;
 const Token = zm.tokenizer.Token;
 const TokenType = zm.tokenizer.TokenType;
 const Tokenizer = zm.tokenizer.Tokenizer;
 const Node = zm.AST.Node;
 const Parser = zm.parser.Parser;
-const renderer = zm.render;
 const OpenNode = renderer.OpenNode;
 
 pub fn main(init: std.process.Init) !void {
@@ -15,14 +16,23 @@ pub fn main(init: std.process.Init) !void {
     const allocator = arena.allocator();
     // const allocator = init.gpa;
 
-    const args = try init.minimal.args.toSlice(allocator);
+    var args_iterator = try init.minimal.args.iterateAllocator(init.gpa);
+    defer args_iterator.deinit();
+    const args = Args.parseArgs(&args_iterator) catch |err| switch (err) {
+        error.MissingOutputFilePath => {
+            std.log.err("Output File not provided", .{});
+            std.log.info("Refer to docs for usage", .{});
+            return;
+        },
+        error.MissingInputFilePath => {
+            std.log.err("Input file not provided", .{});
+            std.log.info("Refer to docs for usage", .{});
+            return;
+        },
+        else => unreachable,
+    };
 
-    if (args.len <= 1) {
-        std.debug.print("Usage: zm FILE_NAME\n", .{});
-        return;
-    }
-
-    const source = try std.Io.Dir.cwd().readFileAlloc(init.io, args[1], init.gpa, .limited(1024 * 20));
+    const source = try std.Io.Dir.cwd().readFileAlloc(init.io, args.input.?, init.gpa, .limited(1024 * 20));
     defer init.gpa.free(source);
 
     // Tokenize
