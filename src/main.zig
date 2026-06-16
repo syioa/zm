@@ -32,7 +32,8 @@ pub fn main(init: std.process.Init) !void {
         else => unreachable,
     };
 
-    const source = try std.Io.Dir.cwd().readFileAlloc(init.io, args.input.?, init.gpa, .limited(1024 * 20));
+    const file_stat = try std.Io.Dir.cwd().statFile(init.io, args.input.?, .{});
+    const source = try std.Io.Dir.cwd().readFileAlloc(init.io, args.input.?, init.gpa, .limited(file_stat.size + 1));
     defer init.gpa.free(source);
 
     // Tokenize
