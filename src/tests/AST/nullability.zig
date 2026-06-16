@@ -54,9 +54,13 @@ test "text properties" {
         if (node.tag == .text) {
             // text payloads should never be null
             try std.testing.expect(node.payload != null);
+            
             // text nodes should not have any children
             try std.testing.expect(node.first_child == null);
             try std.testing.expect(node.num_descendants == 0);
+
+            // text payload idx is not out of bounds of `text_payloads` ArrayList
+            try std.testing.expect(node.payload.? < data.parser.text_payloads.items.len);
         }
     }
 }
