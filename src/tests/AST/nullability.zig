@@ -2,11 +2,50 @@ const std = @import("std");
 const utils = @import("../test.zig");
 const allocator = std.testing.allocator;
 
-//TODO: Test data is to be expanded in all of the following test cases
-
 test "text properties" {
     var data = try utils.genAST(allocator,
-        \\Hello World
+        \\Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        \\Phasellus tempor feugiat lacus tincidunt porttitor. Nullam
+        \\hendrerit dui vulputate, varius nibh eu, bibendum diam. Proin at
+        \\nisi sapien. Aenean fermentum eros at congue dictum. Sed congue
+        \\felis tempus, malesuada massa sit amet, tempus nisl. Proin a neque
+        \\sit amet urna suscipit elementum eget quis diam. Nam in tellus mollis,
+        \\fermentum enim volutpat, faucibus elit. Nam eget pulvinar nunc. Suspendisse
+        \\potenti. Aliquam luctus massa at massa cursus dapibus. Pellentesque
+        \\dignissim ante laoreet massa sagittis, a venenatis odio interdum.
+        \\Phasellus et tempus diam. Duis nulla quam, dapibus non dignissim et, viverra at elit.
+        \\
+        \\Morbi interdum mauris velit, at pretium dui ultrices nec.
+        \\Nullam lacus leo, lobortis at tempus ac, congue nec nisi.
+        \\Fusce fermentum libero ac mi sollicitudin, nec bibendum
+        \\erat porta. Praesent egestas magna urna, vel placerat
+        \\justo rutrum at. Nulla orci libero, iaculis eu diam
+        \\pulvinar, pretium placerat dolor. Duis sit amet lobortis
+        \\ipsum. Proin eu enim iaculis, blandit elit bibendum,
+        \\mattis est. Praesent at pellentesque sem, et varius odio.
+        \\Nulla fringilla vel libero non pharetra.
+        \\
+        \\Fusce pulvinar nunc lorem, ut bibendum sapien tincidunt quis.
+        \\Maecenas augue nunc, vestibulum at nibh sed, feugiat semper dui.
+        \\Cras suscipit velit nec augue ullamcorper vestibulum. Quisque
+        \\maximus, orci in laoreet pellentesque, leo neque ornare nisi,
+        \\sed pulvinar erat elit nec leo. Cras auctor lectus vitae tristique
+        \\iaculis. Sed velit leo, pharetra lacinia ante id, suscipit viverra
+        \\est. Nam mi libero, volutpat at turpis a, hendrerit venenatis risus.
+        \\Fusce tristique quis ex ut egestas. Vivamus posuere lorem a est dictum,
+        \\sit amet venenatis metus efficitur.
+        \\
+        \\Etiam maximus posuere egestas. Quisque commodo efficitur faucibus.
+        \\Fusce ac nunc lobortis, posuere nulla id, finibus est. Donec et lectus
+        \\odio. Morbi molestie sit amet nibh eget faucibus. Vivamus eget diam lacus.
+        \\Nam condimentum risus vitae nisi pulvinar consectetur.
+        \\
+        \\Nulla consequat ultricies consectetur. Pellentesque faucibus
+        \\dignissim scelerisque. Pellentesque ultricies scelerisque malesuada.
+        \\Morbi porta ligula quis leo scelerisque, volutpat volutpat augue
+        \\scelerisque. Donec nec laoreet nulla, eu sodales tellus. Fusce
+        \\fermentum neque in pulvinar pretium. Sed egestas, elit ac interdum
+        \\lacinia, est nisi tincidunt dolor, a auctor nulla eros eu nunc.
     );
     defer data.token_list.deinit(allocator);
     defer data.parser.deinit();
@@ -21,6 +60,8 @@ test "text properties" {
         }
     }
 }
+
+//TODO: Test data is to be expanded in all of the following test cases
 
 test "heading properties" {
     var data = try utils.genAST(allocator,
