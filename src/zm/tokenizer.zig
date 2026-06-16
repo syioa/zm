@@ -166,7 +166,12 @@ pub const Tokenizer = struct {
                 .link_url => {
                     if (char == ')') break :outer;
                 },
-                .indent => {},
+                .indent => {
+                    if (char == '\n') {
+                        self.state = .none;
+                        break :outer;
+                    }
+                },
             }
 
             self.index += 1;
