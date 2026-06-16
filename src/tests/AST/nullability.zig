@@ -65,16 +65,15 @@ test "text properties" {
     }
 }
 
-//TODO: Test data is to be expanded in all of the following test cases
-
 test "heading properties" {
     var data = try utils.genAST(allocator,
-        \\# Hello World
-        \\## Hello Zig
-        \\### Hi
-        \\#### Hola
-        \\##### Hi Nan
-        \\###### Hello End
+        \\# Main Heading
+        \\## Heading with *bold text*
+        \\### Heading with _italic text_
+        \\#### ---------------------
+        \\##### [[[[[[[[[[]]]]]]]]]]
+        \\###### *******************
+        \\######## Weird Heading Level
     );
     defer data.token_list.deinit(allocator);
     defer data.parser.deinit();
@@ -91,8 +90,18 @@ test "heading properties" {
 test "link properties" {
     var data = try utils.genAST(allocator,
         \\[hello](https://somellink.com)
+        \\[hello[]]
+        \\[]()
         \\[link with no url]()
         \\[](https://link-with-only-url.com)
+        \\[weird link](https://user:pa%40ss@[2001:db8::1]:8080/a/b/../c//d?x=1&x=2&y=%F0%9F%98%80#frag)
+        \\[a [nested] link](https://example.com)
+        \\[[[deeply nested]]](https://example.com)
+        \\[text [with [multiple] levels]](https://example.com)
+        \\[link](https://example.com/foo(bar\))
+        \\[link](https://example.com/foo(bar(baz\)\))
+        \\*[bold link](https://google.com/)*
+        \\_[italic link](https://google.com/)_
     );
     defer data.token_list.deinit(allocator);
     defer data.parser.deinit();
@@ -112,17 +121,23 @@ test "link properties" {
 
 test "uli(unordered list item) properties" {
     var data = try utils.genAST(allocator,
-        \\- hello 1
+        \\- list item 1
         \\
-        \\    - hello 1.1
+        \\- list item 2
         \\
-        \\- hello 2
+        \\- list item 3
         \\
-        \\    - hello 2.1
+        \\- item 4
         \\
-        \\    - hello 2.2
+        \\        - item 4.1.1
         \\
-        \\- hello 3
+        \\    - item 4.2
+        \\
+        \\- item 5
+        \\
+        \\    - item 5.1
+        \\
+        \\    - item 5.2
         \\
     );
     defer data.token_list.deinit(allocator);
