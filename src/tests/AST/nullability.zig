@@ -59,7 +59,7 @@ test "text properties" {
             try std.testing.expect(node.first_child == null);
             try std.testing.expect(node.num_descendants == 0);
 
-            // text payload idx is not out of bounds of `text_payloads` ArrayList
+            // text payload idx should not be out of bounds of `text_payloads` ArrayList
             try std.testing.expect(node.payload.? < data.parser.text_payloads.items.len);
         }
     }
@@ -82,6 +82,9 @@ test "heading properties" {
         if (node.tag == .heading) {
             // heading payloads should never be null
             try std.testing.expect(node.payload != null);
+
+            // heading payload idx should not be out of bounds of `heading_payloads` ArrayList
+            try std.testing.expect(node.payload.? < data.parser.heading_payloads.items.len); 
         }
     }
 }
@@ -110,11 +113,15 @@ test "link properties" {
         if (node.tag == .link) {
             // link payloads should never be null
             try std.testing.expect(node.payload != null);
+
             // a link must have a first child as a text node
             try std.testing.expect(node.first_child != null);
             try std.testing.expect(
                 data.parser.nodes.items[node.first_child.?].tag == .text,
             );
+
+            // link payload idx should not be out of bounds of `link_payloads` ArrayList
+            try std.testing.expect(node.payload.? < data.parser.link_payloads.items.len);
         }
     }
 }
@@ -147,6 +154,9 @@ test "uli(unordered list item) properties" {
         if (node.tag == .unordered_list_item) {
             // uli payloads should never be null
             try std.testing.expect(node.payload != null);
+
+            // uli payload idx should not be out of bounds of `uli_payloads` ArrayList
+            try std.testing.expect(node.payload.? < data.parser.uli_payloads.items.len);
         }
     }
 }
