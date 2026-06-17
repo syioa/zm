@@ -67,9 +67,16 @@ pub const HTMLRenderer = struct {
             .paragraph => {
                 try writer.writeAll("<p>");
             },
+            .heading => {
+                const payload = self.heading_payloads[self.nodes[i].payload.?];
+                try writer.print("<h{}>", .{payload.level});
+            },
             .text => {
                 const text = self.text_payloads[self.nodes[i].payload.?].value;
                 try writer.writeAll(text);
+            },
+            .newline => {
+                try writer.writeAll("<br>");
             },
             else => unreachable,
         }
@@ -83,7 +90,12 @@ pub const HTMLRenderer = struct {
             .paragraph => {
                 try writer.writeAll("</p>");
             },
+            .heading => {
+                const payload = self.heading_payloads[self.nodes[i].payload.?];
+                try writer.print("</h{}>", .{payload.level});
+            },
             .text => {},
+            .newline => {},
             else => unreachable,
         }
     }
