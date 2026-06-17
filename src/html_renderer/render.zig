@@ -71,6 +71,16 @@ pub const HTMLRenderer = struct {
                 const payload = self.heading_payloads[self.nodes[i].payload.?];
                 try writer.print("<h{}>", .{payload.level});
             },
+            .bold => {
+                try writer.writeAll("<strong>");
+            },
+            .italic => {
+                try writer.writeAll("<em>");
+            },
+            .link => {
+                const payload = self.link_payloads[self.nodes[i].payload.?];
+                try writer.print("<a href=\"{s}\">", .{payload.url});
+            },
             .text => {
                 const text = self.text_payloads[self.nodes[i].payload.?].value;
                 try writer.writeAll(text);
@@ -93,6 +103,15 @@ pub const HTMLRenderer = struct {
             .heading => {
                 const payload = self.heading_payloads[self.nodes[i].payload.?];
                 try writer.print("</h{}>", .{payload.level});
+            },
+            .bold => {
+                try writer.writeAll("</strong>");
+            },
+            .italic => {
+                try writer.writeAll("</em>");
+            },
+            .link => {
+                try writer.writeAll("</a>");
             },
             .text => {},
             .newline => {},
