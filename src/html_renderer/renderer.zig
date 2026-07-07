@@ -108,14 +108,23 @@ pub const HTMLRenderer = struct {
                 try self.writer.writeAll("<em>");
                 try self.stack.append(self.allocator, .{ .idx = node.id });
             },
+            .link => {
+                if (node.namedChild(1)) |url| {
+                    try self.writer.print(
+                        "<a href=\"{s}\">",
+                        .{self.source[url.startByte()..url.endByte()]},
+                    );
+                    try self.stack.append(self.allocator, .{ .idx = node.id });
+                }
+            },
             .text => {
                 try self.writer.writeAll(self.source[node.startByte()..node.endByte()]);
             },
             .newline => {
                 try self.writer.writeAll("<br>");
             },
+            .url => {},
             .unknown => {},
-            else => try self.writer.writeAll("Sorry, Can't write that :("),
         }
     }
 
@@ -145,9 +154,13 @@ pub const HTMLRenderer = struct {
                     try self.writer.writeAll("</em>");
                     _ = self.stack.pop();
                 },
+                .link => {
+                    try self.writer.writeAll("</a>");
+                    _ = self.stack.pop();
+                },
                 .text => {},
                 .newline => {},
-                else => unreachable,
+                else => {},
             }
         }
     }
