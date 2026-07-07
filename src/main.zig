@@ -2,7 +2,7 @@ const zm = @import("zm");
 const std = @import("std");
 const builtin = @import("builtin");
 
-const renderer = zm.render;
+const renderer = zm.renderer;
 const Args = zm.args;
 
 const ts = zm.tree_sitter;

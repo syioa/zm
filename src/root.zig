@@ -6,7 +6,7 @@ pub const tree_sitter_zm = @import("tree-sitter-zm");
 pub const ts_symbols = @import("ts_symbols.zig");
 
 // rendering
-pub const render = @import("html_renderer/render.zig");
+pub const renderer = @import("html_renderer/renderer.zig");
 
 // cli
 pub const args = @import("args.zig");
