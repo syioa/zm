@@ -1,8 +1,14 @@
 const std = @import("std");
-pub const tokenizer = @import("zm/tokenizer.zig");
-pub const AST = @import("zm/AST.zig");
-pub const parser = @import("zm/parser.zig");
+
+// tree-sitter related
+pub const tree_sitter = @import("tree_sitter");
+pub const tree_sitter_zm = @import("tree-sitter-zm");
+pub const ts_symbols = @import("ts_symbols.zig");
+
+// rendering
 pub const render = @import("html_renderer/render.zig");
+
+// cli
 pub const args = @import("args.zig");
 
 pub const tests = @import("tests/test.zig");

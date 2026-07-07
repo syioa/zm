@@ -1,58 +1,84 @@
 const zm = @import("../root.zig");
 const std = @import("std");
 
-const Node = zm.AST.Node;
-const Allocator = std.mem.Allocator;
+const ts = zm.tree_sitter;
+const ts_symbols = zm.ts_symbols;
 
-pub const OpenNode = struct {
-    idx: u32,
-    subtree_end: u32,
+const Allocator = std.mem.Allocator;
+const Error = error{ WriteFailed, OutOfMemory };
+
+pub const OpenTag = struct {
+    idx: *const anyopaque,
 };
 
 pub const HTMLRenderer = struct {
     allocator: Allocator,
-    nodes: []const Node,
-    heading_payloads: []const Node.heading,
-    text_payloads: []const Node.text,
-    link_payloads: []const Node.link,
-    uli_payloads: []const Node.unordered_list_item,
-    
-    stack: std.ArrayList(OpenNode),
+
+    /// The owner of `writer` is required to flush it
+    writer: *std.Io.Writer,
+
+    tree: *const ts.Tree,
+    ts_kinds: *const ts_symbols.Symbols,
+    source: []const u8,
+
+    stack: std.ArrayList(OpenTag),
 
     properties: struct {
         title: []const u8,
     },
 
-    /// The owner of `writer` is required to flush it
-    pub fn render(
-        self: *HTMLRenderer,
-        writer: *std.Io.Writer,
-    ) error{WriteFailed, OutOfMemory}!void {
-        if (!(self.nodes.len > 1)) return;
+    pub fn render(self: *HTMLRenderer) Error!void {
+        var cursor = self.tree.walk();
+        defer cursor.destroy();
 
-        for (0..self.nodes.len) |i| {
-            while (self.stack.items.len != 0 and i >= self.stack.items[self.stack.items.len - 1].subtree_end) {
-                try self.emitCloseTag(self.stack.pop().?.idx, writer);
+        var depth: usize = 0;
+
+        while (true) {
+            const node = cursor.node();
+            const kind = self.ts_kinds.match(node.kindId());
+
+            try self.visit(&node, kind);
+
+            // STEPPING ENGINE
+            if (cursor.gotoFirstChild()) {
+                depth += 1;
+                continue;
             }
 
-            try self.emitOpenTag(@intCast(i), writer);
+            try self.leave(&node, kind);
 
-            if (self.nodeHasChildren(@intCast(i))) |subtree_size| {
-                try self.stack.append(self.*.allocator, .{ .idx = @intCast(i), .subtree_end = subtree_size });
-            } else {
-                try self.emitCloseTag(@intCast(i), writer);
+            if (cursor.gotoNextSibling()) {
+                continue;
             }
-        }
 
-        while (self.stack.items.len != 0) {
-            try self.emitCloseTag(self.stack.pop().?.idx, writer);
+            // retract upwards
+            var found_sibling = false;
+            while (depth > 0) {
+                _ = cursor.gotoParent();
+                depth -= 1;
+
+                const parent_node = cursor.node();
+                const parent_kind = self.ts_kinds.match(parent_node.kindId());
+                try self.leave(&parent_node, parent_kind);
+
+                if (cursor.gotoNextSibling()) {
+                    found_sibling = true;
+                    break;
+                }
+            }
+
+            if (!found_sibling) break; // no sibling then break
         }
     }
 
-    fn emitOpenTag(self: *const HTMLRenderer, i: u32, writer: *std.Io.Writer) error{WriteFailed}!void {
-        switch (self.nodes[i].tag) {
+    fn visit(
+        self: *HTMLRenderer,
+        node: *const ts.Node,
+        kind: ts_symbols.SymbolKind,
+    ) Error!void {
+        switch (kind) {
             .document => {
-                try writer.print(
+                try self.writer.print(
                     \\<!doctype html>
                     \\<html lang="en">
                     \\<head>
@@ -63,66 +89,66 @@ pub const HTMLRenderer = struct {
                     \\<body>
                     \\
                 , .{self.properties.title});
-            },
-            .paragraph => {
-                try writer.writeAll("<p>");
+
+                try self.stack.append(self.allocator, .{ .idx = node.id });
             },
             .heading => {
-                const payload = self.heading_payloads[self.nodes[i].payload.?];
-                try writer.print("<h{}>", .{payload.level});
+                if (node.child(0)) |marker| {
+                    const level = marker.endByte() - marker.startByte();
+                    try self.writer.print("<h{}>", .{level});
+                    try self.stack.append(self.allocator, .{ .idx = node.id });
+                }
             },
+            .heading_marker => {},
             .bold => {
-                try writer.writeAll("<strong>");
+                try self.writer.writeAll("<strong>");
+                try self.stack.append(self.allocator, .{ .idx = node.id });
             },
             .italic => {
-                try writer.writeAll("<em>");
-            },
-            .link => {
-                const payload = self.link_payloads[self.nodes[i].payload.?];
-                try writer.print("<a href=\"{s}\">", .{payload.url});
+                try self.writer.writeAll("<em>");
+                try self.stack.append(self.allocator, .{ .idx = node.id });
             },
             .text => {
-                const text = self.text_payloads[self.nodes[i].payload.?].value;
-                try writer.writeAll(text);
+                try self.writer.writeAll(self.source[node.startByte()..node.endByte()]);
             },
             .newline => {
-                try writer.writeAll("<br>");
+                try self.writer.writeAll("<br>");
             },
-            else => unreachable,
+            .unknown => {},
+            else => try self.writer.writeAll("Sorry, Can't write that :("),
         }
     }
 
-    fn emitCloseTag(self: *const HTMLRenderer, i: u32, writer: *std.Io.Writer) error{WriteFailed}!void {
-        switch (self.nodes[i].tag) {
-            .document => {
-                try writer.writeAll("</body></html>");
-            },
-            .paragraph => {
-                try writer.writeAll("</p>");
-            },
-            .heading => {
-                const payload = self.heading_payloads[self.nodes[i].payload.?];
-                try writer.print("</h{}>", .{payload.level});
-            },
-            .bold => {
-                try writer.writeAll("</strong>");
-            },
-            .italic => {
-                try writer.writeAll("</em>");
-            },
-            .link => {
-                try writer.writeAll("</a>");
-            },
-            .text => {},
-            .newline => {},
-            else => unreachable,
-        }
-    }
+    fn leave(self: *HTMLRenderer, node: *const ts.Node, kind: ts_symbols.SymbolKind) Error!void {
+        if (self.stack.items.len == 0) return;
 
-    /// returns the index of the last descendant of the parent
-    fn nodeHasChildren(self: *const HTMLRenderer, i: u32) ?u32 {
-        if (self.nodes[i].first_child) |first_child| {
-            return first_child + self.nodes[i].num_descendants;
-        } else return null;
+        const open_tag = self.stack.items[self.stack.items.len - 1];
+        if (open_tag.idx == (node.id)) {
+            switch (kind) {
+                .document => {
+                    try self.writer.writeAll("</body></html>");
+                    _ = self.stack.pop();
+                },
+                .heading => {
+                    if (node.child(0)) |marker| {
+                        const level = marker.endByte() - marker.startByte();
+
+                        try self.writer.print("</h{}>", .{level});
+                        _ = self.stack.pop();
+                    }
+                },
+                .bold => {
+                    try self.writer.writeAll("</strong>");
+                    _ = self.stack.pop();
+                },
+                .italic => {
+                    try self.writer.writeAll("</em>");
+                    _ = self.stack.pop();
+                },
+                .text => {},
+                .newline => {},
+                else => unreachable,
+            }
+        }
     }
 };
