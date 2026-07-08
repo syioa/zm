@@ -46,8 +46,13 @@
           "name": "link"
         },
         {
-          "type": "SYMBOL",
-          "name": "text"
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_normal_text"
+          },
+          "named": true,
+          "value": "text"
         }
       ]
     },
@@ -63,13 +68,48 @@
     "text": {
       "type": "TOKEN",
       "content": {
+        "type": "STRING",
+        "value": "placeholder"
+      }
+    },
+    "_normal_text": {
+      "type": "TOKEN",
+      "content": {
         "type": "REPEAT1",
         "content": {
           "type": "CHOICE",
           "members": [
             {
               "type": "PATTERN",
-              "value": "[^\\n\\\\\\#\\[\\]\\(\\)\\*\\_]+"
+              "value": "[^\\n\\\\\\#\\*\\_\\$]+"
+            },
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "\\"
+                },
+                {
+                  "type": "PATTERN",
+                  "value": "."
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "_link_text": {
+      "type": "TOKEN",
+      "content": {
+        "type": "REPEAT1",
+        "content": {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "PATTERN",
+              "value": "[^\\n\\\\\\]]+"
             },
             {
               "type": "SEQ",
@@ -137,8 +177,13 @@
                 "name": "link"
               },
               {
-                "type": "SYMBOL",
-                "name": "text"
+                "type": "ALIAS",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "_normal_text"
+                },
+                "named": true,
+                "value": "text"
               }
             ]
           }
@@ -170,8 +215,13 @@
                 "name": "link"
               },
               {
-                "type": "SYMBOL",
-                "name": "text"
+                "type": "ALIAS",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "_normal_text"
+                },
+                "named": true,
+                "value": "text"
               }
             ]
           }
@@ -187,11 +237,20 @@
       "members": [
         {
           "type": "STRING",
+          "value": "$link"
+        },
+        {
+          "type": "STRING",
           "value": "["
         },
         {
-          "type": "SYMBOL",
-          "name": "text"
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_link_text"
+          },
+          "named": true,
+          "value": "text"
         },
         {
           "type": "STRING",

@@ -20,18 +20,23 @@ export default grammar({
       $.bold,
       $.italic,
       $.link,
-      $.text,
+      alias($._normal_text, $.text),
     ),
     _block_content: $ => choice(
       $.heading,
     ),
 
     // #region _inline_content
-    text: _ => token(repeat1(choice(
-      /[^\n\\\#\[\]\(\)\*\_]+/, // normal text
+    text: _ => token('placeholder'), // never use this directly, this node is just a placeholder
+    _normal_text: _ => token(repeat1(choice(
+      /[^\n\\\#\*\_\$]+/,
       seq('\\', /./) // escape
     ))),
-    
+    _link_text: _ => token(repeat1(choice(
+      /[^\n\\\]]+/,
+      seq('\\', /./) // escape
+    ))),
+
     url: _ => token(repeat1(choice(
       /[^\s\\)]+/, // url matcher
       seq('\\', /./), // escape
@@ -42,7 +47,7 @@ export default grammar({
       repeat1(choice(
         $.italic,
         $.link,
-        $.text,
+        alias($._normal_text, $.text),
       )),
       '**',
     ),
@@ -51,13 +56,14 @@ export default grammar({
       repeat1(choice(
         $.bold,
         $.link,
-        $.text,
+        alias($._normal_text, $.text),
       )),
       '__',
     ),
     link: $ => seq(
+      '$link',
       '[',
-      $.text,
+      alias($._link_text, $.text),
       '](',
       $.url,
       ')'

@@ -132,6 +132,10 @@
     }
   },
   {
+    "type": "$link",
+    "named": false
+  },
+  {
     "type": ")",
     "named": false
   },
