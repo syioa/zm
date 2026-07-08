@@ -1,6 +1,6 @@
-# Hello *World*
-This is a paragraph with *bold text* inside it.
-This is a paragraph with _italic text_ inside it.
+# Hello World
+This is a paragraph with **bold text** inside it.
+This is a paragraph with __italic text__ inside it.
 
 ## Subheading
 More text.

@@ -121,7 +121,7 @@
       "members": [
         {
           "type": "STRING",
-          "value": "*"
+          "value": "**"
         },
         {
           "type": "REPEAT1",
@@ -145,7 +145,7 @@
         },
         {
           "type": "STRING",
-          "value": "*"
+          "value": "**"
         }
       ]
     },
@@ -154,7 +154,7 @@
       "members": [
         {
           "type": "STRING",
-          "value": "_"
+          "value": "__"
         },
         {
           "type": "REPEAT1",
@@ -178,7 +178,7 @@
         },
         {
           "type": "STRING",
-          "value": "_"
+          "value": "__"
         }
       ]
     },

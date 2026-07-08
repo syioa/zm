@@ -38,22 +38,22 @@ export default grammar({
     ))),
 
     bold: $ => seq(
-      '*',
+      '**',
       repeat1(choice(
         $.italic,
         $.link,
         $.text,
       )),
-      '*',
+      '**',
     ),
     italic: $ => seq(
-      '_',
+      '__',
       repeat1(choice(
         $.bold,
         $.link,
         $.text,
       )),
-      '_',
+      '__',
     ),
     link: $ => seq(
       '[',

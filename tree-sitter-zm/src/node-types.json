@@ -136,7 +136,7 @@
     "named": false
   },
   {
-    "type": "*",
+    "type": "**",
     "named": false
   },
   {
@@ -148,7 +148,7 @@
     "named": false
   },
   {
-    "type": "_",
+    "type": "__",
     "named": false
   },
   {
