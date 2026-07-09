@@ -4,6 +4,8 @@ const std = @import("std");
 const ts = zm.tree_sitter;
 const ts_symbols = zm.ts_symbols;
 
+const utils = zm.utils;
+
 const Allocator = std.mem.Allocator;
 const Error = error{ WriteFailed, OutOfMemory };
 
@@ -110,15 +112,15 @@ pub const HTMLRenderer = struct {
             },
             .link => {
                 if (node.namedChild(1)) |url| {
-                    try self.writer.print(
-                        "<a href=\"{s}\">",
-                        .{self.source[url.startByte()..url.endByte()]},
-                    );
+                    try self.writer.writeAll("<a href=\"");
+                    try utils.writeUnescaped(self.writer, self.source[url.startByte()..url.endByte()]);
+                    try self.writer.writeAll("\">");
+
                     try self.stack.append(self.allocator, .{ .idx = node.id });
                 }
             },
             .text => {
-                try self.writer.writeAll(self.source[node.startByte()..node.endByte()]);
+                try utils.writeUnescaped(self.writer, self.source[node.startByte()..node.endByte()]);
             },
             .newline => {
                 try self.writer.writeAll("<br>");
