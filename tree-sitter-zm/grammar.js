@@ -80,6 +80,7 @@ export default grammar({
     _heading_content: $ => repeat1($._inline_content),
     heading: $ => (seq(
       $.heading_marker,
+      /\ /,
       $._heading_content,
     )),
 

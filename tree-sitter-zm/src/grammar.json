@@ -296,6 +296,10 @@
           "name": "heading_marker"
         },
         {
+          "type": "PATTERN",
+          "value": "\\ "
+        },
+        {
           "type": "SYMBOL",
           "name": "_heading_content"
         }
