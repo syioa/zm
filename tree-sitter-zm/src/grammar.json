@@ -281,13 +281,6 @@
       "type": "PATTERN",
       "value": "#{1,6}"
     },
-    "_heading_content": {
-      "type": "REPEAT1",
-      "content": {
-        "type": "SYMBOL",
-        "name": "_inline_content"
-      }
-    },
     "heading": {
       "type": "SEQ",
       "members": [
@@ -300,8 +293,11 @@
           "value": "\\ "
         },
         {
-          "type": "SYMBOL",
-          "name": "_heading_content"
+          "type": "REPEAT1",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_inline_content"
+          }
         }
       ]
     },

@@ -77,11 +77,10 @@ export default grammar({
 
     // #region _block_content
     heading_marker: _ => /#{1,6}/,
-    _heading_content: $ => repeat1($._inline_content),
     heading: $ => (seq(
       $.heading_marker,
       /\ /,
-      $._heading_content,
+      repeat1($._inline_content),
     )),
 
     unordered_list: $ => seq(
