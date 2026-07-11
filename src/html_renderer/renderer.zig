@@ -101,7 +101,6 @@ pub const HTMLRenderer = struct {
                     try self.stack.append(self.allocator, .{ .idx = node.id });
                 }
             },
-            .heading_marker => {},
             .bold => {
                 try self.writer.writeAll("<strong>");
                 try self.stack.append(self.allocator, .{ .idx = node.id });
@@ -125,7 +124,27 @@ pub const HTMLRenderer = struct {
             .newline => {
                 try self.writer.writeAll("<br>");
             },
+            .unordered_list => {
+                try self.writer.writeAll("<ul>");
+                try self.stack.append(self.allocator, .{ .idx = node.id });
+            },
+            .unordered_list_item => {
+                var nesting_level: u32 = 0;
+                
+                if (node.child(0)) |attr| {
+                    if (self.ts_kinds.match(attr.kindId()) == .attr)
+                        nesting_level = (attr.endByte() - attr.startByte()) / 2;
+                }
+
+                try self.writer.print(
+                    "<li style=\"margin-left: {d}rem;\" data-level=\"{d}\">", // TODO: think of a better way than this
+                    .{nesting_level, nesting_level},
+                );
+                try self.stack.append(self.allocator, .{ .idx = node.id });
+            },
+            .attr => {},
             .url => {},
+            .heading_marker => {},
             .unknown => {},
         }
     }
@@ -134,7 +153,7 @@ pub const HTMLRenderer = struct {
         if (self.stack.items.len == 0) return;
 
         const open_tag = self.stack.items[self.stack.items.len - 1];
-        if (open_tag.idx == (node.id)) {
+        if (open_tag.idx == node.id) {
             switch (kind) {
                 .document => {
                     try self.writer.writeAll("</body></html>");
@@ -160,8 +179,14 @@ pub const HTMLRenderer = struct {
                     try self.writer.writeAll("</a>");
                     _ = self.stack.pop();
                 },
-                .text => {},
-                .newline => {},
+                .unordered_list => {
+                    try self.writer.writeAll("</ul>");
+                    _ = self.stack.pop();
+                },
+                .unordered_list_item => {
+                    try self.writer.writeAll("</li>");
+                    _ = self.stack.pop();
+                },
                 else => {},
             }
         }

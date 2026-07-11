@@ -13,9 +13,10 @@ export default grammar({
 
   extras: _ => [],
   rules: {
-    document: $ => repeat(
-      seq(choice($._block_content, repeat($._inline_content)), $.newline),
-    ),
+    document: $ => repeat(seq(
+      choice($._block_content, repeat($._inline_content)),
+      $.newline,
+    )),
     _inline_content: $ => choice(
       $.bold,
       $.italic,
@@ -24,12 +25,16 @@ export default grammar({
     ),
     _block_content: $ => choice(
       $.heading,
+      $.unordered_list,
     ),
 
     // #region _inline_content
-    text: _ => token('placeholder'), // never use this directly, this node is just a placeholder
+    // the following 2 nodes are meant to be used as aliases
+    // never use them directly
+    text: _ => token('don\'t use me'),
+    attr: _ => token('don\'t use me'),
     _normal_text: _ => token(repeat1(choice(
-      /[^\n\\\#\*\_\$]+/,
+      /[^\n\\\#\*\_\$\-]+/,
       seq('\\', /./) // escape
     ))),
     _link_text: _ => token(repeat1(choice(
@@ -77,6 +82,17 @@ export default grammar({
       $.heading_marker,
       $._heading_content,
     )),
+
+    unordered_list: $ => seq(
+      repeat1($.unordered_list_item),
+    ),
+    unordered_list_item: $ => seq(
+      optional(alias(token(repeat('  ')), $.attr)),
+      token(/\-/),
+      token(/\ /),
+      repeat1($._inline_content),
+      $.newline,
+    ),
     // #endregion
 
     // special tokens

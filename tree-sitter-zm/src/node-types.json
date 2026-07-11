@@ -54,6 +54,10 @@
         {
           "type": "text",
           "named": true
+        },
+        {
+          "type": "unordered_list",
+          "named": true
         }
       ]
     }
@@ -132,6 +136,56 @@
     }
   },
   {
+    "type": "unordered_list",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "unordered_list_item",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "unordered_list_item",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "attr",
+          "named": true
+        },
+        {
+          "type": "bold",
+          "named": true
+        },
+        {
+          "type": "italic",
+          "named": true
+        },
+        {
+          "type": "link",
+          "named": true
+        },
+        {
+          "type": "newline",
+          "named": true
+        },
+        {
+          "type": "text",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "$link",
     "named": false
   },
@@ -154,6 +208,10 @@
   {
     "type": "__",
     "named": false
+  },
+  {
+    "type": "attr",
+    "named": true
   },
   {
     "type": "heading_marker",

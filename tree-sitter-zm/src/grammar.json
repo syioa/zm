@@ -62,6 +62,10 @@
         {
           "type": "SYMBOL",
           "name": "heading"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "unordered_list"
         }
       ]
     },
@@ -69,7 +73,14 @@
       "type": "TOKEN",
       "content": {
         "type": "STRING",
-        "value": "placeholder"
+        "value": "don't use me"
+      }
+    },
+    "attr": {
+      "type": "TOKEN",
+      "content": {
+        "type": "STRING",
+        "value": "don't use me"
       }
     },
     "_normal_text": {
@@ -81,7 +92,7 @@
           "members": [
             {
               "type": "PATTERN",
-              "value": "[^\\n\\\\\\#\\*\\_\\$]+"
+              "value": "[^\\n\\\\\\#\\*\\_\\$\\-]+"
             },
             {
               "type": "SEQ",
@@ -287,6 +298,71 @@
         {
           "type": "SYMBOL",
           "name": "_heading_content"
+        }
+      ]
+    },
+    "unordered_list": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "REPEAT1",
+          "content": {
+            "type": "SYMBOL",
+            "name": "unordered_list_item"
+          }
+        }
+      ]
+    },
+    "unordered_list_item": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "ALIAS",
+              "content": {
+                "type": "TOKEN",
+                "content": {
+                  "type": "REPEAT",
+                  "content": {
+                    "type": "STRING",
+                    "value": "  "
+                  }
+                }
+              },
+              "named": true,
+              "value": "attr"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "TOKEN",
+          "content": {
+            "type": "PATTERN",
+            "value": "\\-"
+          }
+        },
+        {
+          "type": "TOKEN",
+          "content": {
+            "type": "PATTERN",
+            "value": "\\ "
+          }
+        },
+        {
+          "type": "REPEAT1",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_inline_content"
+          }
+        },
+        {
+          "type": "SYMBOL",
+          "name": "newline"
         }
       ]
     },

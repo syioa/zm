@@ -10,9 +10,12 @@ pub const SymbolKind = enum {
     bold,
     italic,
     text,
+    attr,
     url,
     newline,
     link,
+    unordered_list,
+    unordered_list_item,
 
     unknown,
 };
@@ -27,11 +30,15 @@ pub const Symbols = struct {
     italic: u16,
 
     text: u16,
+    attr: u16,
     url: u16,
 
     newline: u16,
 
     link: u16,
+
+    unordered_list: u16,
+    unordered_list_item: u16,
 
     pub fn init(lang: *const ts.Language) Symbols {
         return .{
@@ -44,11 +51,15 @@ pub const Symbols = struct {
             .italic = lang.idForNodeKind("italic", true),
 
             .text = lang.idForNodeKind("text", true),
+            .attr = lang.idForNodeKind("attr", true),
             .url = lang.idForNodeKind("url", true),
 
             .newline = lang.idForNodeKind("newline", true),
 
             .link = lang.idForNodeKind("link", true),
+
+            .unordered_list = lang.idForNodeKind("unordered_list", true),
+            .unordered_list_item = lang.idForNodeKind("unordered_list_item", true),
         };
     }
 
@@ -65,12 +76,18 @@ pub const Symbols = struct {
             return .italic;
         } else if (variant == self.text) {
             return .text;
+        } else if (variant == self.attr) {
+            return .attr;
         } else if (variant == self.url) {
             return .url;
         } else if (variant == self.newline) {
             return .newline;
         } else if (variant == self.link) {
             return .link;
+        } else if (variant == self.unordered_list) {
+            return .unordered_list;
+        } else if (variant == self.unordered_list_item) {
+            return .unordered_list_item;
         } else {
             return .unknown;
         }
