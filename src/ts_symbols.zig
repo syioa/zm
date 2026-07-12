@@ -16,6 +16,8 @@ pub const SymbolKind = enum {
     link,
     unordered_list,
     unordered_list_item,
+    ordered_list,
+    ordered_list_item,
 
     unknown,
 };
@@ -40,6 +42,9 @@ pub const Symbols = struct {
     unordered_list: u16,
     unordered_list_item: u16,
 
+    ordered_list: u16,
+    ordered_list_item: u16,
+
     pub fn init(lang: *const ts.Language) Symbols {
         return .{
             .document = lang.idForNodeKind("document", true),
@@ -60,6 +65,9 @@ pub const Symbols = struct {
 
             .unordered_list = lang.idForNodeKind("unordered_list", true),
             .unordered_list_item = lang.idForNodeKind("unordered_list_item", true),
+
+            .ordered_list = lang.idForNodeKind("ordered_list", true),
+            .ordered_list_item = lang.idForNodeKind("ordered_list_item", true),
         };
     }
 
@@ -88,6 +96,10 @@ pub const Symbols = struct {
             return .unordered_list;
         } else if (variant == self.unordered_list_item) {
             return .unordered_list_item;
+        } else if (variant == self.ordered_list) {
+            return .ordered_list;
+        } else if (variant == self.ordered_list_item) {
+            return .ordered_list_item;
         } else {
             return .unknown;
         }

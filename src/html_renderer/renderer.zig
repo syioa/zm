@@ -25,6 +25,8 @@ pub const HTMLRenderer = struct {
 
     stack: std.ArrayList(OpenTag),
 
+    ol_numbering: std.ArrayList(u32),
+
     properties: struct {
         title: []const u8,
     },
@@ -142,6 +144,43 @@ pub const HTMLRenderer = struct {
                 );
                 try self.stack.append(self.allocator, .{ .idx = node.id });
             },
+            .ordered_list => {
+                try self.writer.writeAll("<ol>");
+                try self.stack.append(self.allocator, .{ .idx = node.id });
+            },
+            .ordered_list_item => {
+                var current_level: u32 = 1;
+                const last_level: u32 = @intCast(self.ol_numbering.items.len);
+
+                if (node.child(0)) |attr| {
+                    if (self.ts_kinds.match(attr.kindId()) == .attr)
+                        current_level = ((attr.endByte() - attr.startByte()) / 2) + 1;
+                }
+
+                if (last_level >= 1) {
+                    if (last_level == current_level) {
+                        self.ol_numbering.items[self.ol_numbering.items.len - 1] += 1;
+                    } else if (last_level < current_level) {
+                        while (current_level > self.ol_numbering.items.len) {
+                            try self.ol_numbering.append(self.allocator, 1);
+                        }
+                    } else if (last_level > current_level) {
+                        while (self.ol_numbering.items.len > current_level) {
+                            _ = self.ol_numbering.pop();
+                        }
+
+                        self.ol_numbering.items[self.ol_numbering.items.len - 1] += 1;
+                    }
+                } else {
+                    try self.ol_numbering.append(self.allocator, 1);
+                }
+
+                try self.writer.print("<li style=\"--level: {d};\" data-path=\"{any}\">", .{
+                    current_level - 1,
+                    self.ol_numbering.items,
+                });
+                try self.stack.append(self.allocator, .{ .idx = node.id });
+            },
             .attr => {},
             .url => {},
             .heading_marker => {},
@@ -184,6 +223,14 @@ pub const HTMLRenderer = struct {
                     _ = self.stack.pop();
                 },
                 .unordered_list_item => {
+                    try self.writer.writeAll("</li>");
+                    _ = self.stack.pop();
+                },
+                .ordered_list => {
+                    try self.writer.writeAll("</ol>");
+                    _ = self.stack.pop();
+                },
+                .ordered_list_item => {
                     try self.writer.writeAll("</li>");
                     _ = self.stack.pop();
                 },

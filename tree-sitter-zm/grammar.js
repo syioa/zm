@@ -26,6 +26,7 @@ export default grammar({
     _block_content: $ => choice(
       $.heading,
       $.unordered_list,
+      $.ordered_list,
     ),
 
     // #region _inline_content
@@ -90,6 +91,21 @@ export default grammar({
       optional(alias(token(repeat('  ')), $.attr)),
       token(/\-/),
       token(/\ /),
+      repeat1($._inline_content),
+      $.newline,
+    ),
+
+    ordered_list: $ => seq(
+      token(/\$ol/),
+      /\n/,
+      repeat1($.ordered_list_item),
+    ),
+    ordered_list_item: $ => seq(
+      optional(
+        alias(token( repeat('  ') ), $.attr)
+      ),
+      /\d+\./,
+      /\ /,
       repeat1($._inline_content),
       $.newline,
     ),

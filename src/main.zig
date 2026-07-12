@@ -68,13 +68,14 @@ pub fn main(init: std.process.Init) !void {
     var file_writer = std.Io.File.stderr().writer(init.io, &buf);
     const writer = &file_writer.interface;
 
-    var render = renderer.HTMLRenderer {
+    var render = renderer.HTMLRenderer{
         .allocator = allocator,
         .writer = writer,
         .source = source,
         .tree = tree,
         .ts_kinds = &ts_symbols.Symbols.init(lang),
         .stack = try std.ArrayList(renderer.OpenTag).initCapacity(allocator, @intCast(try std.math.divCeil(u32, tree.rootNode().descendantCount(), 3))),
+        .ol_numbering = try std.ArrayList(u32).initCapacity(allocator, 8),
         .properties = .{ .title = "Some dummy title" },
     };
 
