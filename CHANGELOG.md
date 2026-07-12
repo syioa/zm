@@ -2,6 +2,37 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.2.0 - 2026-07-12
+#### Features
+- (**html-renderer**) implement rendering of bold, italic and links to html - (6ba2c4a) - syioa
+- (**html-renderer**) render headings - (179ce1d) - syioa
+- add nested ordered lists - (3222fa3) - syioa
+#### Bug Fixes
+- (**tests**) remove non-existent file import - (f94da48) - syioa
+- can provide larger files than before - (11dadae) - syioa
+- skip newlines in indent state - (85d918d) - syioa
+#### Refactoring
+- (**html-renderer**) implement proper escaping - (18d7549) - syioa
+- (**tests**) ensure payloads are not out of bounds - (6abefdb) - syioa
+- (**tests**) complete checking of various posibilities - (c43fe7d) - syioa
+- (**tests**) ensure text payload idx is not out of bounds - (dfab82a) - syioa
+- remove the unnecessary `_heading_content` from ts grammar - (9d3b7b4) - syioa
+- ensure heading marker is always followed by a space - (52dc348) - syioa
+- implement unordered lists - (cda2544) - syioa
+- change link syntax - (d912a65) - syioa
+- change bold marker to '**' and italic marker to '__' - (fd437e1) - syioa
+- implement rendering of links - (1c7e6cd) - syioa
+- remove the tests as they were redundant - (6b6d7c4) - syioa
+- rename render to renderer in root.zig and main.zig - (0922c87) - syioa
+- rewrite of the parser and tokenizer in tree sitter - (e59b055) - syioa
+- expand test data - (187de73) - syioa
+- add some basic tests - (305a921) - syioa
+#### Miscellaneous Chores
+- add zig-pkg in .gitignore - (fc507dc) - syioa
+- update README.md - (e846f1b) - syioa
+
+- - -
+
 ## 0.1.1 - 2026-06-14
 #### Features
 - basic cli args parsing - (4050524) - syioa
