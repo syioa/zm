@@ -229,6 +229,8 @@ pub const HTMLRenderer = struct {
                 .ordered_list => {
                     try self.writer.writeAll("</ol>");
                     _ = self.stack.pop();
+
+                    while (self.ol_numbering.pop()) |_| {}
                 },
                 .ordered_list_item => {
                     try self.writer.writeAll("</li>");
