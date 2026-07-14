@@ -18,6 +18,7 @@ pub const SymbolKind = enum {
     unordered_list_item,
     ordered_list,
     ordered_list_item,
+    paragraph,
 
     unknown,
 };
@@ -27,6 +28,8 @@ pub const Symbols = struct {
 
     heading: u16,
     heading_marker: u16,
+
+    paragraph: u16,
 
     bold: u16,
     italic: u16,
@@ -51,6 +54,8 @@ pub const Symbols = struct {
 
             .heading = lang.idForNodeKind("heading", true),
             .heading_marker = lang.idForNodeKind("heading_marker", true),
+
+            .paragraph = lang.idForNodeKind("paragraph", true),
 
             .bold = lang.idForNodeKind("bold", true),
             .italic = lang.idForNodeKind("italic", true),
@@ -100,6 +105,8 @@ pub const Symbols = struct {
             return .ordered_list;
         } else if (variant == self.ordered_list_item) {
             return .ordered_list_item;
+        } else if (variant == self.paragraph) {
+            return .paragraph;
         } else {
             return .unknown;
         }

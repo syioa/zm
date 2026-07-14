@@ -15,11 +15,7 @@
                 "name": "_block_content"
               },
               {
-                "type": "REPEAT",
-                "content": {
-                  "type": "SYMBOL",
-                  "name": "_inline_content"
-                }
+                "type": "BLANK"
               }
             ]
           },
@@ -70,6 +66,10 @@
         {
           "type": "SYMBOL",
           "name": "ordered_list"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "paragraph"
         }
       ]
     },
@@ -374,8 +374,8 @@
           }
         },
         {
-          "type": "SYMBOL",
-          "name": "newline"
+          "type": "PATTERN",
+          "value": "\\n"
         }
       ]
     },
@@ -453,10 +453,29 @@
           }
         },
         {
-          "type": "SYMBOL",
-          "name": "newline"
+          "type": "PATTERN",
+          "value": "\\n"
         }
       ]
+    },
+    "paragraph": {
+      "type": "REPEAT1",
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "REPEAT1",
+            "content": {
+              "type": "SYMBOL",
+              "name": "_inline_content"
+            }
+          },
+          {
+            "type": "PATTERN",
+            "value": "\\n"
+          }
+        ]
+      }
     },
     "newline": {
       "type": "STRING",

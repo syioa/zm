@@ -145,6 +145,10 @@ pub const HTMLRenderer = struct {
             .ordered_list_item => {
                 try self.visit_ordered_list_item(node);
             },
+            .paragraph => {
+                try self.writer.writeAll("<p>");
+                try self.stack.append(self.allocator, .{ .idx = node.id });
+            },
             .attr => {},
             .url => {},
             .heading_marker => {},
@@ -210,6 +214,10 @@ pub const HTMLRenderer = struct {
                 },
                 .ordered_list_item => {
                     try self.writer.writeAll("</li>");
+                    _ = self.stack.pop();
+                },
+                .paragraph => {
+                    try self.writer.writeAll("</p>");
                     _ = self.stack.pop();
                 },
                 else => {},

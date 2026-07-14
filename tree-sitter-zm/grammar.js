@@ -14,7 +14,7 @@ export default grammar({
   extras: _ => [],
   rules: {
     document: $ => repeat(seq(
-      choice($._block_content, repeat($._inline_content)),
+      optional($._block_content),
       $.newline,
     )),
     _inline_content: $ => choice(
@@ -27,6 +27,7 @@ export default grammar({
       $.heading,
       $.unordered_list,
       $.ordered_list,
+      $.paragraph,
     ),
 
     // #region _inline_content
@@ -95,7 +96,7 @@ export default grammar({
       token(/\-/),
       token(/\ /),
       repeat1($._inline_content),
-      $.newline,
+      /\n/,
     ),
 
     ordered_list: $ => seq(
@@ -113,8 +114,10 @@ export default grammar({
       /\d+\./,
       /\ /,
       repeat1($._inline_content),
-      $.newline,
+      /\n/,
     ),
+
+    paragraph: $ => repeat1(seq(repeat1($._inline_content), /\n/)),
     // #endregion
 
     // special tokens
