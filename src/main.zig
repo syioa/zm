@@ -75,7 +75,10 @@ pub fn main(init: std.process.Init) !void {
         .tree = tree,
         .ts_kinds = &ts_symbols.Symbols.init(lang),
         .stack = try std.ArrayList(renderer.OpenTag).initCapacity(allocator, @intCast(try std.math.divCeil(u32, tree.rootNode().descendantCount(), 3))),
-        .ol_numbering = try std.ArrayList(u32).initCapacity(allocator, 8),
+        .list_state = .{
+            .numbering = try std.ArrayList(u32).initCapacity(allocator, 10),
+            .modes = try std.ArrayList(renderer.ListMode).initCapacity(allocator, 10),
+        },
         .properties = .{ .title = "Some dummy title" },
     };
 

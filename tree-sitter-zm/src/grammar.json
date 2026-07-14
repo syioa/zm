@@ -311,8 +311,17 @@
         {
           "type": "REPEAT1",
           "content": {
-            "type": "SYMBOL",
-            "name": "unordered_list_item"
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "unordered_list_item"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "ordered_list_item"
+              }
+            ]
           }
         }
       ]
@@ -387,8 +396,17 @@
         {
           "type": "REPEAT1",
           "content": {
-            "type": "SYMBOL",
-            "name": "ordered_list_item"
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "ordered_list_item"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "unordered_list_item"
+              }
+            ]
           }
         }
       ]

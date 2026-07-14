@@ -85,7 +85,10 @@ export default grammar({
     )),
 
     unordered_list: $ => seq(
-      repeat1($.unordered_list_item),
+      repeat1(choice(
+        $.unordered_list_item,
+        $.ordered_list_item,
+      )),
     ),
     unordered_list_item: $ => seq(
       optional(alias(token(repeat('  ')), $.attr)),
@@ -98,7 +101,10 @@ export default grammar({
     ordered_list: $ => seq(
       token(/\$ol/),
       /\n/,
-      repeat1($.ordered_list_item),
+      repeat1(choice(
+        $.ordered_list_item,
+        $.unordered_list_item,
+      )),
     ),
     ordered_list_item: $ => seq(
       optional(

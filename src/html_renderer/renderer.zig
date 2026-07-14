@@ -13,6 +13,8 @@ pub const OpenTag = struct {
     idx: *const anyopaque,
 };
 
+pub const ListMode = enum { ordered, unordered };
+
 pub const HTMLRenderer = struct {
     allocator: Allocator,
 
@@ -25,7 +27,10 @@ pub const HTMLRenderer = struct {
 
     stack: std.ArrayList(OpenTag),
 
-    ol_numbering: std.ArrayList(u32),
+    list_state: struct {
+        numbering: std.ArrayList(u32),
+        modes: std.ArrayList(ListMode),
+    },
 
     properties: struct {
         title: []const u8,
@@ -130,56 +135,15 @@ pub const HTMLRenderer = struct {
                 try self.writer.writeAll("<ul>");
                 try self.stack.append(self.allocator, .{ .idx = node.id });
             },
-            .unordered_list_item => {
-                var nesting_level: u32 = 0;
-                
-                if (node.child(0)) |attr| {
-                    if (self.ts_kinds.match(attr.kindId()) == .attr)
-                        nesting_level = (attr.endByte() - attr.startByte()) / 2;
-                }
-
-                try self.writer.print(
-                    "<li style=\"margin-left: {d}rem;\" data-level=\"{d}\">", // TODO: think of a better way than this
-                    .{nesting_level, nesting_level},
-                );
-                try self.stack.append(self.allocator, .{ .idx = node.id });
-            },
             .ordered_list => {
                 try self.writer.writeAll("<ol>");
                 try self.stack.append(self.allocator, .{ .idx = node.id });
             },
+            .unordered_list_item => {
+                try self.visit_unordered_list_item(node);
+            },
             .ordered_list_item => {
-                var current_level: u32 = 1;
-                const last_level: u32 = @intCast(self.ol_numbering.items.len);
-
-                if (node.child(0)) |attr| {
-                    if (self.ts_kinds.match(attr.kindId()) == .attr)
-                        current_level = ((attr.endByte() - attr.startByte()) / 2) + 1;
-                }
-
-                if (last_level >= 1) {
-                    if (last_level == current_level) {
-                        self.ol_numbering.items[self.ol_numbering.items.len - 1] += 1;
-                    } else if (last_level < current_level) {
-                        while (current_level > self.ol_numbering.items.len) {
-                            try self.ol_numbering.append(self.allocator, 1);
-                        }
-                    } else if (last_level > current_level) {
-                        while (self.ol_numbering.items.len > current_level) {
-                            _ = self.ol_numbering.pop();
-                        }
-
-                        self.ol_numbering.items[self.ol_numbering.items.len - 1] += 1;
-                    }
-                } else {
-                    try self.ol_numbering.append(self.allocator, 1);
-                }
-
-                try self.writer.print("<li style=\"--level: {d};\" data-path=\"{any}\">", .{
-                    current_level - 1,
-                    self.ol_numbering.items,
-                });
-                try self.stack.append(self.allocator, .{ .idx = node.id });
+                try self.visit_ordered_list_item(node);
             },
             .attr => {},
             .url => {},
@@ -221,16 +185,28 @@ pub const HTMLRenderer = struct {
                 .unordered_list => {
                     try self.writer.writeAll("</ul>");
                     _ = self.stack.pop();
-                },
-                .unordered_list_item => {
-                    try self.writer.writeAll("</li>");
-                    _ = self.stack.pop();
+
+                    while (self.list_state.numbering.items.len != 0 and
+                        self.list_state.modes.items.len != 0)
+                    {
+                        _ = self.list_state.numbering.pop();
+                        _ = self.list_state.modes.pop();
+                    }
                 },
                 .ordered_list => {
                     try self.writer.writeAll("</ol>");
                     _ = self.stack.pop();
 
-                    while (self.ol_numbering.pop()) |_| {}
+                    while (self.list_state.numbering.items.len != 0 and
+                        self.list_state.modes.items.len != 0)
+                    {
+                        _ = self.list_state.numbering.pop();
+                        _ = self.list_state.modes.pop();
+                    }
+                },
+                .unordered_list_item => {
+                    try self.writer.writeAll("</li>");
+                    _ = self.stack.pop();
                 },
                 .ordered_list_item => {
                     try self.writer.writeAll("</li>");
@@ -239,5 +215,106 @@ pub const HTMLRenderer = struct {
                 else => {},
             }
         }
+    }
+
+    // Helper fn
+    fn visit_unordered_list_item(self: *HTMLRenderer, node: *const ts.Node) Error!void {
+        var current_level: u32 = 1;
+        const last_level: u32 = @intCast(self.list_state.numbering.items.len);
+
+        if (node.child(0)) |attr| {
+            if (self.ts_kinds.match(attr.kindId()) == .attr)
+                current_level = ((attr.endByte() - attr.startByte()) / 2) + 1;
+        }
+
+        if (last_level >= 1) {
+            if (last_level == current_level) {
+                self.list_state.numbering.items[self.list_state.numbering.items.len - 1] += 1;
+
+                if (self.list_state.modes.items[self.list_state.modes.items.len - 1] == .ordered) {
+                    _ = self.list_state.modes.pop();
+                    try self.list_state.modes.append(self.allocator, .unordered);
+                }
+            } else if (last_level < current_level) {
+                while (current_level > self.list_state.numbering.items.len) {
+                    try self.list_state.numbering.append(self.allocator, 1);
+                    try self.list_state.modes.append(self.allocator, .unordered);
+                }
+            } else if (last_level > current_level) {
+                while (self.list_state.numbering.items.len > current_level) {
+                    _ = self.list_state.numbering.pop();
+                    _ = self.list_state.modes.pop();
+                }
+
+                self.list_state.numbering.items[self.list_state.numbering.items.len - 1] += 1;
+                if (self.list_state.modes.items[self.list_state.modes.items.len - 1] == .ordered) {
+                    _ = self.list_state.modes.pop();
+                    try self.list_state.modes.append(self.allocator, .unordered);
+                }
+            }
+        } else {
+            try self.list_state.numbering.append(self.allocator, 1);
+            try self.list_state.modes.append(self.allocator, .unordered);
+        }
+
+        try self.writer.print(
+            "<li style=\"--level: {d};\" data-path=\"{any}\" data-modes=\"{any}\">",
+            .{
+                current_level - 1,
+                self.list_state.numbering.items,
+                self.list_state.modes.items,
+            },
+        );
+        try self.stack.append(self.allocator, .{ .idx = node.id });
+    }
+
+    fn visit_ordered_list_item(self: *HTMLRenderer, node: *const ts.Node) Error!void {
+        var current_level: u32 = 1;
+        const last_level: u32 = @intCast(self.list_state.numbering.items.len);
+
+        if (node.child(0)) |attr| {
+            if (self.ts_kinds.match(attr.kindId()) == .attr)
+                current_level = ((attr.endByte() - attr.startByte()) / 2) + 1;
+        }
+
+        if (last_level >= 1) {
+            if (last_level == current_level) {
+                self.list_state.numbering.items[self.list_state.numbering.items.len - 1] += 1;
+
+                if (self.list_state.modes.items[self.list_state.modes.items.len - 1] == .unordered) {
+                    _ = self.list_state.modes.pop();
+                    try self.list_state.modes.append(self.allocator, .ordered);
+                }
+            } else if (last_level < current_level) {
+                while (current_level > self.list_state.numbering.items.len) {
+                    try self.list_state.numbering.append(self.allocator, 1);
+                    try self.list_state.modes.append(self.allocator, .ordered);
+                }
+            } else if (last_level > current_level) {
+                while (self.list_state.numbering.items.len > current_level) {
+                    _ = self.list_state.numbering.pop();
+                    _ = self.list_state.modes.pop();
+                }
+
+                self.list_state.numbering.items[self.list_state.numbering.items.len - 1] += 1;
+                if (self.list_state.modes.items[self.list_state.modes.items.len - 1] == .unordered) {
+                    _ = self.list_state.modes.pop();
+                    try self.list_state.modes.append(self.allocator, .ordered);
+                }
+            }
+        } else {
+            try self.list_state.numbering.append(self.allocator, 1);
+            try self.list_state.modes.append(self.allocator, .ordered);
+        }
+
+        try self.writer.print(
+            "<li style=\"--level: {d};\" data-path=\"{any}\" data-modes=\"{any}\">",
+            .{
+                current_level - 1,
+                self.list_state.numbering.items,
+                self.list_state.modes.items,
+            },
+        );
+        try self.stack.append(self.allocator, .{ .idx = node.id });
     }
 };
