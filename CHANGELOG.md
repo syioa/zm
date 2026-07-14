@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.2.1 - 2026-07-14
+#### Features
+- implement nested ordered lists - (cba55b4) - syioa
+#### Bug Fixes
+- (**html-renderer**) remove all elements from the ol_numbering when ol is rendered - (43635e2) - syioa
+
+- - -
+
 ## 0.2.0 - 2026-07-12
 #### Features
 - (**html-renderer**) implement rendering of bold, italic and links to html - (6ba2c4a) - syioa
