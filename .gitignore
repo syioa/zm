@@ -142,3 +142,4 @@ docgen_tmp/
 
 .zig-cache/
 zig-pkg/
+.test.zm

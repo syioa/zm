@@ -91,7 +91,6 @@ pub fn main(init: std.process.Init) !void {
             .numbering = try std.ArrayList(u32).initCapacity(allocator, 10),
             .modes = try std.ArrayList(renderer.ListMode).initCapacity(allocator, 10),
         },
-        .properties = .{ .title = "Some dummy title" },
     };
 
     try render.render();

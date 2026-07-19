@@ -34,10 +34,6 @@ pub const HTMLRenderer = struct {
 
     frontmatter: []const u8,
 
-    properties: struct {
-        title: []const u8,
-    },
-
     pub fn render(self: *HTMLRenderer) Error!void {
         var cursor = self.tree.walk();
         defer cursor.destroy();
@@ -95,16 +91,16 @@ pub const HTMLRenderer = struct {
                     \\<head>
                     \\    <meta charset="UTF-8">
                     \\    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    \\    <title>{s}</title>
                     \\</head>
                     \\<body>
                     \\<script id="frontmatter" type="application/kdl">{s}</script>
                     \\<script type="module">
                     \\import {{ parse }} from "https://esm.sh/@bgotink/kdl/json";
                     \\window.vars = parse(document.getElementById("frontmatter").textContent)
+                    \\document.title = vars.title || "Title Not Provided";
                     \\</script>
                     \\
-                , .{ self.properties.title, self.frontmatter });
+                , .{ self.frontmatter });
 
                 try self.stack.append(self.allocator, .{ .idx = node.id });
             },
