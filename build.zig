@@ -19,9 +19,14 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    const kdl = b.dependency("kdl", .{
+        .target = target,
+        .optimize = optimize,
+    });
 
     mod.addImport("tree-sitter-zm", tree_sitter_zm.module("tree-sitter-zm"));
     mod.addImport("tree_sitter", tree_sitter.module("tree_sitter"));
+    mod.addImport("kdl", kdl.module("kdl"));
 
     const exe = b.addExecutable(.{
         .name = "zm",

@@ -40,6 +40,10 @@
             .url = "https://github.com/tree-sitter/zig-tree-sitter/archive/refs/tags/v0.26.0.tar.gz",
             .hash = "tree_sitter-0.26.0-8heIf3CaAQDeVTQc0DMSBhbQAEx5aF-dTen4_LPxMgrv",
         },
+        .kdl = .{
+            .url = "git+https://codeberg.org/desttinghim/zig-kdl?ref=main#22fa7655d70de1f447c864921ab847effec355f3",
+            .hash = "kdl-0.0.0-8rilELAEAgCwhdgb36ZsWmGgtvrKaLmLI7eMlwBz8UDt",
+        },
     },
     .paths = .{
         "build.zig",

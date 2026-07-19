@@ -32,6 +32,8 @@ pub const HTMLRenderer = struct {
         modes: std.ArrayList(ListMode),
     },
 
+    frontmatter: []const u8,
+
     properties: struct {
         title: []const u8,
     },
@@ -96,8 +98,13 @@ pub const HTMLRenderer = struct {
                     \\    <title>{s}</title>
                     \\</head>
                     \\<body>
+                    \\<script id="frontmatter" type="application/kdl">{s}</script>
+                    \\<script type="module">
+                    \\import {{ parse }} from "https://esm.sh/@bgotink/kdl/json";
+                    \\window.vars = parse(document.getElementById("frontmatter").textContent)
+                    \\</script>
                     \\
-                , .{self.properties.title});
+                , .{ self.properties.title, self.frontmatter });
 
                 try self.stack.append(self.allocator, .{ .idx = node.id });
             },

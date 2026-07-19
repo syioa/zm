@@ -11,6 +11,8 @@ pub const renderer = @import("html_renderer/renderer.zig");
 // utils
 pub const utils = @import("utils.zig");
 
+pub const kdl = @import("kdl");
+
 // cli
 pub const args = @import("args.zig");
 

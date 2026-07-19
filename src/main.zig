@@ -48,6 +48,17 @@ pub fn main(init: std.process.Init) !void {
     const source = try std.Io.Dir.cwd().readFileAlloc(init.io, args.input.?, allocator, .limited(file_stat.size + 1));
     defer allocator.free(source);
 
+    const frontmatter_end = zm.utils.splitFrontmatter(source) catch {
+        // TODO: write to stderr instead
+        std.debug.print("Unclosed frontmatter in the given input file.", .{});
+        return;
+    };
+    const is_valid_kdl = try zm.utils.isValidKdl(allocator, source[0..frontmatter_end]);
+    if (!is_valid_kdl) {
+        // TODO: write to stderr instead
+        std.debug.print("Syntax Errors in frontmatter", .{});
+    }
+
     ts.setAllocator(ts_allocator);
     defer ts.setAllocator(null);
 
@@ -58,7 +69,7 @@ pub fn main(init: std.process.Init) !void {
     defer lang.destroy();
 
     try parser.setLanguage(lang);
-    const tree = parser.parseString(source, null) orelse {
+    const tree = parser.parseString(source[frontmatter_end..], null) orelse {
         return error.FailedToParse;
     };
     defer tree.destroy();
@@ -71,7 +82,8 @@ pub fn main(init: std.process.Init) !void {
     var render = renderer.HTMLRenderer{
         .allocator = allocator,
         .writer = writer,
-        .source = source,
+        .source = source[frontmatter_end..],
+        .frontmatter = source[4..(frontmatter_end-4)],
         .tree = tree,
         .ts_kinds = &ts_symbols.Symbols.init(lang),
         .stack = try std.ArrayList(renderer.OpenTag).initCapacity(allocator, @intCast(try std.math.divCeil(u32, tree.rootNode().descendantCount(), 3))),

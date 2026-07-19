@@ -109,7 +109,7 @@ export default grammar({
     ),
     ordered_list_item: $ => seq(
       optional(
-        alias(token( repeat('  ') ), $.attr)
+        alias(token(repeat('  ')), $.attr)
       ),
       /\d+\./,
       /\ /,
