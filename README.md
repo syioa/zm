@@ -5,36 +5,81 @@
 
 > [!note]
 > Markdown(CommonMark Specification) is very weird and complex(sometimes) so I don't intend to support CommonMark Specification and would deliberately try to make a lot of things simpler to write and parse.
-> This means that most of the markdown you write won't be necessarily compatible with `zm`.
+>
+> `zm` envisions to be different from markdown in my ways but sometimes embracing markdown's simplicity.
 
 > [!warning]
 > Many features are not complete yet!
+
 
 ## Installation
 
 Currently no package manager is supported. You need to build this project yourself.
 
-There are no dependencies as of now except for the Zig compiler to compile the project.
+All the dependencies will be fetched by the Zig compiler.
+
 
 ## Features
 
-Features are not complete yet. Still `zm` can tokenize and parse the following types of markup features -
+Following features are supported —
 
-- Bold via `*` wrapped around the word, phrase, or sentence.
-- Italic via `_` wrapped around the word, phrase or sentence.
-- Links via `[text](url)` syntax.
-- Blockquotes via the usual `> ` syntax, remember that a space after the `>` is important, without it a blockquote won't be created.
-- Unordered Lists via hyphen (`- `) syntax, also nested unordered lists are supported. Note that a space after `-` is important.
+###### Bold And Italic
 
+Use `**` chars around the word, phrase or sentence for **bold**.
 
-#### List of Deliberate Exclusions
+Use `__` chars around the word, phrase or sentence for _italic_.
 
-- Nested blockquotes are not supported.
-- Link text can't contain bold or italic modifiers, if you want to make your link bold, wrap the link with the modifier like this - `*[some text](https://someurl.com)*`.
-- An Unordered List Item only ends if you leave a blank line otherwise it doesn't.
+###### Links
+
+Links are supported via this syntax `$link[text](url)`.
+
+Remember that the text can't contain any bold or italics or other links.
+To make a link bold(/italic) wrap the bold(/italic) chars around the whole link syntax.
+
+###### Unordered & Ordered Lists
+
+**Unordered Lists** start with usual `-` and a space is necessary after the hyphen(-). Unordered list items only span a single line and a newline is necessary after one.
+
+To start **Ordered Lists** you first have to write `$ol` and in the next line use numbers and a period(.) followed by a space to start a ordered list item. They too span a single line and a newline is necessary after one.
+
+Both **Unordered & Ordered List Items** are nestable and you can mix Unordered and Ordered List Items. But remember that in the following eg. (though it is discouraged to write something like this, but still it's a feature)
+
+```md
+- Item 1
+1. Item 2
+```
+
+`Item 1` will have a order number 1 and `Item 2` will have order number 2. (Yes even unordered lists have order numbers but they are not shown, unless you write some custom js code in the generated HTML file).
+
+###### Frontmatter
+
+For the frontmatter this project uses [KDL](https://kdl.dev/). The usual `---` markers are supported for the start and end of the frontmatter content. The following is an eg.
+
+```zm
+---
+- {
+    title "Hello World"
+}
+---
+
+```
+
+Visit [KDL](https://kdl.dev/) to know the KDL syntax. Though remember that in `zm` frontmatter, there could only be one node at the top level of your KDL syntax and the title value is used for the title of the HTML document generated.
+
 
 ## Usage
 
 Currently this program does not produce any `.html` or any other file.
-It just parses and renders(or converts) the provided Markdown file to HTML and prints the output to **stdout**.
+It just parses and renders(or converts) the provided `zm` file to HTML and prints the output to **stdout**.
+
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+
+## Acknowledgements
+
+- [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) for parsing the `zm` syntax.
+- [KDL and its Community](https://kdl.dev/) for the frontmatter.
 
