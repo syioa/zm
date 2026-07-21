@@ -49,6 +49,10 @@
           },
           "named": true,
           "value": "text"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "variable"
         }
       ]
     },
@@ -96,7 +100,7 @@
           "members": [
             {
               "type": "PATTERN",
-              "value": "[^\\n\\\\\\#\\*\\_\\$\\-]+"
+              "value": "[^\\n\\\\\\#\\*\\_\\$\\-\\{]+"
             },
             {
               "type": "SEQ",
@@ -152,7 +156,7 @@
           "members": [
             {
               "type": "PATTERN",
-              "value": "[^\\s\\\\)]+"
+              "value": "[^\\s\\\\){]+"
             },
             {
               "type": "SEQ",
@@ -170,6 +174,47 @@
           ]
         }
       }
+    },
+    "variable": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "PATTERN",
+          "value": "\\{"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "PATTERN",
+              "value": " "
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "PATTERN",
+          "value": "[A-Za-z0-9\\_\\-\\.]+"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "PATTERN",
+              "value": " "
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "PATTERN",
+          "value": "\\}"
+        }
+      ]
     },
     "bold": {
       "type": "SEQ",
@@ -199,6 +244,10 @@
                 },
                 "named": true,
                 "value": "text"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "variable"
               }
             ]
           }
@@ -237,6 +286,10 @@
                 },
                 "named": true,
                 "value": "text"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "variable"
               }
             ]
           }
@@ -272,8 +325,22 @@
           "value": "]("
         },
         {
-          "type": "SYMBOL",
-          "name": "url"
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "url"
+            },
+            {
+              "type": "ALIAS",
+              "content": {
+                "type": "SYMBOL",
+                "name": "variable"
+              },
+              "named": true,
+              "value": "url"
+            }
+          ]
         },
         {
           "type": "STRING",

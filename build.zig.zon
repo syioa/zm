@@ -34,7 +34,7 @@
     .dependencies = .{
         .tree_sitter_zm = .{
             .url = "./tree-sitter-zm/",
-            .hash = "tree_sitter_zm-0.1.0-FoMrHB5aAQDQNhat-mE6NGlv-TI3xlLIdjHBWk1byqhV",
+            .hash = "tree_sitter_zm-0.1.0-FoMrHKOVAQANuJJN8c1LwyGJCQlj16MaEPCo_SnwBpf3",
         },
         .tree_sitter = .{
             .url = "https://github.com/tree-sitter/zig-tree-sitter/archive/refs/tags/v0.26.0.tar.gz",

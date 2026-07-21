@@ -22,6 +22,7 @@ export default grammar({
       $.italic,
       $.link,
       alias($._normal_text, $.text),
+      $.variable,
     ),
     _block_content: $ => choice(
       $.heading,
@@ -36,7 +37,7 @@ export default grammar({
     text: _ => token('don\'t use me'),
     attr: _ => token('don\'t use me'),
     _normal_text: _ => token(repeat1(choice(
-      /[^\n\\\#\*\_\$\-]+/,
+      /[^\n\\\#\*\_\$\-\{]+/,
       seq('\\', /./) // escape
     ))),
     _link_text: _ => token(repeat1(choice(
@@ -45,9 +46,17 @@ export default grammar({
     ))),
 
     url: _ => token(repeat1(choice(
-      /[^\s\\)]+/, // url matcher
+      /[^\s\\){]+/, // url matcher
       seq('\\', /./), // escape
     ))),
+
+    variable: $ => seq(
+      /\{/,
+      optional(/ /),
+      /[A-Za-z0-9\_\-\.]+/,
+      optional(/ /),
+      /\}/,
+    ),
 
     bold: $ => seq(
       '**',
@@ -55,6 +64,7 @@ export default grammar({
         $.italic,
         $.link,
         alias($._normal_text, $.text),
+        $.variable,
       )),
       '**',
     ),
@@ -64,6 +74,7 @@ export default grammar({
         $.bold,
         $.link,
         alias($._normal_text, $.text),
+        $.variable,
       )),
       '__',
     ),
@@ -72,7 +83,7 @@ export default grammar({
       '[',
       alias($._link_text, $.text),
       '](',
-      $.url,
+      choice($.url, alias($.variable, $.url)),
       ')'
     ),
     // #endregion

@@ -18,6 +18,10 @@
         {
           "type": "text",
           "named": true
+        },
+        {
+          "type": "variable",
+          "named": true
         }
       ]
     }
@@ -81,6 +85,10 @@
         {
           "type": "text",
           "named": true
+        },
+        {
+          "type": "variable",
+          "named": true
         }
       ]
     }
@@ -103,6 +111,10 @@
         },
         {
           "type": "text",
+          "named": true
+        },
+        {
+          "type": "variable",
           "named": true
         }
       ]
@@ -173,6 +185,10 @@
         {
           "type": "text",
           "named": true
+        },
+        {
+          "type": "variable",
+          "named": true
         }
       ]
     }
@@ -199,6 +215,10 @@
         },
         {
           "type": "text",
+          "named": true
+        },
+        {
+          "type": "variable",
           "named": true
         }
       ]
@@ -250,9 +270,23 @@
         {
           "type": "text",
           "named": true
+        },
+        {
+          "type": "variable",
+          "named": true
         }
       ]
     }
+  },
+  {
+    "type": "url",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "variable",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "$link",
@@ -292,10 +326,6 @@
   },
   {
     "type": "text",
-    "named": true
-  },
-  {
-    "type": "url",
     "named": true
   }
 ]

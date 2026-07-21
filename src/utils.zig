@@ -7,7 +7,7 @@ pub fn writeUnescaped(writer: *std.Io.Writer, escaped_str: []const u8) !void {
     var i: usize = 0;
     while (i < escaped_str.len) {
         if (escaped_str[i] == '\\' and i + 1 < escaped_str.len) {
-            try writer.writeByte(escaped_str[i+1]);
+            try writer.writeByte(escaped_str[i + 1]);
             i += 2;
         } else {
             // Write normal, non-escaped characters
@@ -17,9 +17,15 @@ pub fn writeUnescaped(writer: *std.Io.Writer, escaped_str: []const u8) !void {
     }
 }
 
+pub fn writeVar(writer: *std.Io.Writer, str: []const u8) !void {
+    try writer.writeAll(
+        std.mem.trim(u8, str[1..(str.len - 1)], " \t\r\n"),
+    );
+}
+
 /// return the index from where the content starts, excluding
 /// the frontmatter marker.
-/// 
+///
 /// returns 0 if no frontmatter present and an error if
 /// unclosed frontmatter found.
 pub fn splitFrontmatter(source: []const u8) !usize {
@@ -57,7 +63,7 @@ pub fn isValidKdl(gpa: std.mem.Allocator, input: []const u8) !bool {
     var event = try parser.next();
     while (event != .eof) : (event = try parser.next()) {
         switch (event) {
-            .invalid => return false,       // explicit syntax error
+            .invalid => return false, // explicit syntax error
             .child_block_begin => depth += 1,
             .child_block_end => {
                 if (depth == 0) return false; // stray `}`

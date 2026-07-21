@@ -100,7 +100,7 @@ pub const HTMLRenderer = struct {
                     \\document.title = vars.title || "Title Not Provided";
                     \\</script>
                     \\
-                , .{ self.frontmatter });
+                , .{self.frontmatter});
 
                 try self.stack.append(self.allocator, .{ .idx = node.id });
             },
@@ -121,15 +121,25 @@ pub const HTMLRenderer = struct {
             },
             .link => {
                 if (node.namedChild(1)) |url| {
-                    try self.writer.writeAll("<a href=\"");
-                    try utils.writeUnescaped(self.writer, self.source[url.startByte()..url.endByte()]);
-                    try self.writer.writeAll("\">");
+                    if (self.source[url.startByte()] != '{') {
+                        try self.writer.writeAll("<a href=\"");
+                        try utils.writeUnescaped(self.writer, self.source[url.startByte()..url.endByte()]);
+                    } else {
+                        try self.writer.writeAll("<a data-zm-href=\"");
+                        try utils.writeVar(self.writer, self.source[url.startByte()..url.endByte()]);
+                    }
 
+                    try self.writer.writeAll("\">");
                     try self.stack.append(self.allocator, .{ .idx = node.id });
                 }
             },
             .text => {
                 try utils.writeUnescaped(self.writer, self.source[node.startByte()..node.endByte()]);
+            },
+            .variable => {
+                try self.writer.writeAll("<zm-var path=\"");
+                try utils.writeVar(self.writer, self.source[node.startByte()..node.endByte()]);
+                try self.writer.writeAll("\"></zm-var>");
             },
             .newline => {
                 try self.writer.writeAll("<br>");
@@ -166,7 +176,76 @@ pub const HTMLRenderer = struct {
         if (open_tag.idx == node.id) {
             switch (kind) {
                 .document => {
-                    try self.writer.writeAll("</body></html>");
+                    try self.writer.writeAll(
+                        \\<script type="module">
+                        \\function resolve(path, obj) {
+                        \\    let current = obj;
+                        \\
+                        \\    for (const segment of path.split('.')) {
+                        \\        if (current == null) return undefined;
+                        \\
+                        \\        if (Array.isArray(current)) {
+                        \\            const index = Number(segment);
+                        \\            if (!Number.isInteger(index)) return undefined;
+                        \\            current = current[index];
+                        \\        } else {
+                        \\            current = current[segment];
+                        \\        }
+                        \\    }
+                        \\
+                        \\    return current;
+                        \\}
+                        \\
+                        \\function renderVariables(root = document) {
+                        \\    const missing = new Set();
+                        \\
+                        \\    for (const el of document.querySelectorAll("zm-var")) {
+                        \\        const path = el.getAttribute("path");
+                        \\        const value = resolve(path, window.vars);
+                        \\    
+                        \\        if (value === undefined || value === null) {
+                        \\            missing.add(path);
+                        \\            el.replaceWith(document.createTextNode(""));
+                        \\        } else {
+                        \\            el.replaceWith(document.createTextNode(String(value)));
+                        \\        }
+                        \\    }
+                        \\
+                        \\    if (missing.size > 0) {
+                        \\        const div = document.createElement("div");
+                        \\        div.id = "zm-errors";
+                        \\
+                        \\        Object.assign(div.style, {
+                        \\            margin: "1rem",
+                        \\            padding: "1rem",
+                        \\            border: "1px solid #d97706",
+                        \\            borderRadius: "6px",
+                        \\            background: "#fff7ed",
+                        \\            color: "#7c2d12",
+                        \\            fontFamily: "system-ui, sans-serif",
+                        \\            fontSize: "14px",
+                        \\        });
+                        \\    
+                        \\        div.innerHTML = `
+                        \\            <strong>Undefined frontmatter variables</strong>
+                        \\            <ul>
+                        \\                ${[...missing].map(v => `<li>${v}</li>`).join("")}
+                        \\            </ul>
+                        \\        `;
+                        \\
+                        \\        Object.assign(div.children[0].style, {
+                        \\            display: "block",
+                        \\            marginBottom: "0.5rem",
+                        \\        });
+                        \\
+                        \\        document.body.prepend(div);
+                        \\    }
+                        \\}
+                        \\
+                        \\renderVariables();
+                        \\</script>
+                        \\</body></html>
+                    );
                     _ = self.stack.pop();
                 },
                 .heading => {

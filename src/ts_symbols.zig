@@ -19,6 +19,7 @@ pub const SymbolKind = enum {
     ordered_list,
     ordered_list_item,
     paragraph,
+    variable,
 
     unknown,
 };
@@ -37,6 +38,7 @@ pub const Symbols = struct {
     text: u16,
     attr: u16,
     url: u16,
+    variable: u16,
 
     newline: u16,
 
@@ -63,6 +65,7 @@ pub const Symbols = struct {
             .text = lang.idForNodeKind("text", true),
             .attr = lang.idForNodeKind("attr", true),
             .url = lang.idForNodeKind("url", true),
+            .variable = lang.idForNodeKind("variable", true),
 
             .newline = lang.idForNodeKind("newline", true),
 
@@ -107,6 +110,8 @@ pub const Symbols = struct {
             return .ordered_list_item;
         } else if (variant == self.paragraph) {
             return .paragraph;
+        } else if (variant == self.variable) {
+            return .variable;
         } else {
             return .unknown;
         }
