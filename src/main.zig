@@ -32,13 +32,13 @@ pub fn main(init: std.process.Init) !void {
     defer args_iterator.deinit();
     const args = Args.parseArgs(&args_iterator) catch |err| switch (err) {
         error.MissingOutputFilePath => {
-            std.log.err("Output File not provided", .{});
-            std.log.info("Refer to docs for usage", .{});
+            std.log.err("Output File not provided\n", .{});
+            std.log.info("Refer to docs for usage\n", .{});
             return;
         },
         error.MissingInputFilePath => {
-            std.log.err("Input file not provided", .{});
-            std.log.info("Refer to docs for usage", .{});
+            std.log.err("Input file not provided\n", .{});
+            std.log.info("Refer to docs for usage\n", .{});
             return;
         },
         else => unreachable,
@@ -50,13 +50,13 @@ pub fn main(init: std.process.Init) !void {
 
     const frontmatter_end = zm.utils.splitFrontmatter(source) catch {
         // TODO: write to stderr instead
-        std.debug.print("Unclosed frontmatter in the given input file.", .{});
+        std.debug.print("Unclosed frontmatter in the given input file.\n", .{});
         return;
     };
     const is_valid_kdl = try zm.utils.isValidKdl(allocator, source[0..frontmatter_end]);
     if (!is_valid_kdl) {
         // TODO: write to stderr instead
-        std.debug.print("Syntax Errors in frontmatter", .{});
+        std.debug.print("Syntax Errors in frontmatter\n", .{});
     }
 
     ts.setAllocator(ts_allocator);
@@ -73,6 +73,11 @@ pub fn main(init: std.process.Init) !void {
         return error.FailedToParse;
     };
     defer tree.destroy();
+
+    if (tree.rootNode().hasError()) {
+        std.debug.print("Syntax Errors in Markup\n", .{});
+        return;
+    }
 
     //------------------
     var buf: [2000]u8 = undefined;
