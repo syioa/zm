@@ -538,8 +538,8 @@
             }
           },
           {
-            "type": "PATTERN",
-            "value": "\\n"
+            "type": "SYMBOL",
+            "name": "newline"
           }
         ]
       }

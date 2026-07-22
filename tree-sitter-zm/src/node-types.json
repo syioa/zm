@@ -214,6 +214,10 @@
           "named": true
         },
         {
+          "type": "newline",
+          "named": true
+        },
+        {
           "type": "text",
           "named": true
         },

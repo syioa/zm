@@ -50,7 +50,7 @@ export default grammar({
       seq('\\', /./), // escape
     ))),
 
-    variable: $ => seq(
+    variable: _ => seq(
       /\{/,
       optional(/ /),
       /[A-Za-z0-9\_\-\.]+/,
@@ -128,7 +128,7 @@ export default grammar({
       /\n/,
     ),
 
-    paragraph: $ => repeat1(seq(repeat1($._inline_content), /\n/)),
+    paragraph: $ => repeat1(seq(repeat1($._inline_content), $.newline)),
     // #endregion
 
     // special tokens
