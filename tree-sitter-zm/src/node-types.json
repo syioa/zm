@@ -1,5 +1,36 @@
 [
   {
+    "type": "blockquote",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "bold",
+          "named": true
+        },
+        {
+          "type": "italic",
+          "named": true
+        },
+        {
+          "type": "link",
+          "named": true
+        },
+        {
+          "type": "text",
+          "named": true
+        },
+        {
+          "type": "variable",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "bold",
     "named": true,
     "fields": {},
@@ -35,6 +66,10 @@
       "multiple": true,
       "required": false,
       "types": [
+        {
+          "type": "blockquote",
+          "named": true
+        },
         {
           "type": "heading",
           "named": true

@@ -162,6 +162,10 @@ pub const HTMLRenderer = struct {
                 try self.writer.writeAll("<p>");
                 try self.stack.append(self.allocator, .{ .idx = node.id });
             },
+            .blockquote => {
+                try self.writer.writeAll("<blockquote>");
+                try self.stack.append(self.allocator, .{ .idx = node.id });
+            },
             .attr => {},
             .url => {},
             .heading_marker => {},
@@ -300,6 +304,10 @@ pub const HTMLRenderer = struct {
                 },
                 .paragraph => {
                     try self.writer.writeAll("</p>");
+                    _ = self.stack.pop();
+                },
+                .blockquote => {
+                    try self.writer.writeAll("</blockquote>");
                     _ = self.stack.pop();
                 },
                 else => {},

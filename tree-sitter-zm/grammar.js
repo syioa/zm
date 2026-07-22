@@ -7,7 +7,6 @@
 /// <reference types="tree-sitter-cli/dsl" />
 // @ts-check
 
-
 export default grammar({
   name: "zm",
 
@@ -29,6 +28,7 @@ export default grammar({
       $.unordered_list,
       $.ordered_list,
       $.paragraph,
+      $.blockquote,
     ),
 
     // #region _inline_content
@@ -37,7 +37,7 @@ export default grammar({
     text: _ => token('don\'t use me'),
     attr: _ => token('don\'t use me'),
     _normal_text: _ => token(repeat1(choice(
-      /[^\n\\\#\*\_\$\-\{]+/,
+      /[^\n\\\#\*\_\$\-\{>]+/,
       seq('\\', /./) // escape
     ))),
     _link_text: _ => token(repeat1(choice(
@@ -129,6 +129,11 @@ export default grammar({
     ),
 
     paragraph: $ => repeat1(seq(repeat1($._inline_content), $.newline)),
+
+    blockquote: $ => seq(
+      /> /,
+      repeat1($._inline_content)
+    ),
     // #endregion
 
     // special tokens
