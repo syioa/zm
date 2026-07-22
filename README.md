@@ -66,6 +66,23 @@ For the frontmatter this project uses [KDL](https://kdl.dev/). The usual `---` m
 
 Visit [KDL](https://kdl.dev/) to know the KDL syntax. Though remember that in `zm` frontmatter, there could only be one node at the top level of your KDL syntax and the title value is used for the title of the HTML document generated.
 
+###### Variables
+
+All the properties defined in the frontmatter can be used as variables throughout the document.
+
+Use the syntax `{variable_name}`. There could be an optional space between the curly brackets and the variable name.
+
+Nested variables and lists can be indexed via dot(`.`) syntax like this `{ some_parent.named_child.0 }`. (Yes lists are indexed via dots not square brackets(`[]`) like in most programming languages. )
+
+###### Blockquote
+
+`Blockquote`s in `zm` is very different to markdown. `Blockquote`s in `zm` markup produce a `<blockquote>` tag in the resulting HTML.
+
+The syntax is similar to markdown, though. Just use `>` followed by a space.
+
+>[!note]
+> Nested `blockquote`s are not supported as it is weird to have nested `<blockquote>` tags in HTML.
+
 
 ## Usage
 
