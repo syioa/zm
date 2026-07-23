@@ -75,7 +75,8 @@ pub fn main(init: std.process.Init) !void {
     defer tree.destroy();
 
     if (tree.rootNode().hasError()) {
-        std.debug.print("Syntax Errors in Markup\n", .{});
+        // TODO: also provide with proper line number where the error occurred
+        std.log.err("Syntax Errors in Markup\n", .{});
         return;
     }
 

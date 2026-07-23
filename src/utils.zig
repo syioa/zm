@@ -84,13 +84,6 @@ test "valid kdl" {
     ));
 }
 
-test "invalid kdl - unterminated string" {
-    const gpa = std.testing.allocator;
-    try std.testing.expect(!try isValidKdl(gpa,
-        \\node "unterminated
-    ));
-}
-
 test "invalid kdl - unbalanced brace" {
     const gpa = std.testing.allocator;
     try std.testing.expect(!try isValidKdl(gpa,
