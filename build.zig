@@ -1,4 +1,5 @@
 const std = @import("std");
+const build_zon = @import("build.zig.zon");
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
@@ -45,6 +46,14 @@ pub fn build(b: *std.Build) void {
         .use_llvm = true,
     });
 
+    const options = b.addOptions();
+    options.addOption(
+        []const u8,
+        "version",
+        build_zon.version,
+    );
+    exe.root_module.addOptions("build_options", options);
+
     b.installArtifact(exe);
 
     const run_step = b.step("run", "Run the app");
@@ -63,12 +72,16 @@ pub fn build(b: *std.Build) void {
     // Tests
     const mod_tests = b.addTest(.{
         .root_module = mod,
+        // if zig's linker causes issues enable this
+        .use_llvm = true,
     });
 
     const run_mod_tests = b.addRunArtifact(mod_tests);
 
     const exe_tests = b.addTest(.{
         .root_module = exe.root_module,
+        // if zig's linker causes issues enable this
+        .use_llvm = true,
     });
 
     const run_exe_tests = b.addRunArtifact(exe_tests);

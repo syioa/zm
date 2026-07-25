@@ -1,6 +1,7 @@
 const zm = @import("zm");
 const std = @import("std");
 const builtin = @import("builtin");
+const build_options = @import("build_options");
 
 const renderer = zm.renderer;
 const Args = zm.args;
@@ -11,6 +12,24 @@ const Parser = ts.Parser;
 const ts_zm = zm.tree_sitter_zm;
 
 const ts_symbols = zm.ts_symbols;
+
+fn print_help_message(writer: *std.Io.Writer) !void {
+    try writer.print(
+        \\zm {s}
+        \\The cli for zm markup language
+        \\
+        \\{s} zm [OPTIONS] <INPUT_FILE_NAME>
+        \\
+        \\{s}
+        \\    -h, --help             Print help information
+        \\    -o, --output <path>    Generate HTML file
+        \\
+    , .{
+        build_options.version,
+        "\x1b[1m\x1b[4mUSAGE:\x1b[0m",
+        "\x1b[1m\x1b[4mOPTIONS:\x1b[0m",
+    });
+}
 
 pub fn main(init: std.process.Init) !void {
     const allocator = init.arena.allocator();
@@ -32,31 +51,50 @@ pub fn main(init: std.process.Init) !void {
     defer args_iterator.deinit();
     const args = Args.parseArgs(&args_iterator) catch |err| switch (err) {
         error.MissingOutputFilePath => {
-            std.log.err("Output File not provided\n", .{});
-            std.log.info("Refer to docs for usage\n", .{});
+            std.log.err("Output File not provided", .{});
+            std.log.info("For usage, try '--help'", .{});
             return;
         },
         error.MissingInputFilePath => {
-            std.log.err("Input file not provided\n", .{});
-            std.log.info("Refer to docs for usage\n", .{});
+            std.log.err("Input file not provided", .{});
+            std.log.info("For usage, try '--help'", .{});
+            return;
+        },
+        error.UnexpectedArguments => {
+            std.log.err("Unexpected Argument(s)", .{});
+            std.log.info("For usage, try '--help'", .{});
             return;
         },
         else => unreachable,
     };
+
+    var stdout = std.Io.File.stdout().writer(init.io, &.{});
+    const stdout_writer = &stdout.interface;
+    if (args.help) {
+        try print_help_message(stdout_writer);
+        return;
+    } else if (args.version) {
+        try stdout_writer.print("v{s}\n", .{build_options.version});
+        return;
+    } else if (args.output == null and args.input != null) {
+        std.log.info("You forgot to provide the output file name", .{});
+        return;
+    } else if (args.output == null) {
+        return;
+    }
 
     const file_stat = try std.Io.Dir.cwd().statFile(init.io, args.input.?, .{});
     const source = try std.Io.Dir.cwd().readFileAlloc(init.io, args.input.?, allocator, .limited(file_stat.size + 1));
     defer allocator.free(source);
 
     const frontmatter_end = zm.utils.splitFrontmatter(source) catch {
-        // TODO: write to stderr instead
-        std.debug.print("Unclosed frontmatter in the given input file.\n", .{});
+        std.log.err("Unclosed frontmatter in the given input file.\n", .{});
         return;
     };
     const is_valid_kdl = try zm.utils.isValidKdl(allocator, source[0..frontmatter_end]);
     if (!is_valid_kdl) {
-        // TODO: write to stderr instead
-        std.debug.print("Syntax Errors in frontmatter\n", .{});
+        std.log.err("Syntax Errors in frontmatter", .{});
+        return;
     }
 
     ts.setAllocator(ts_allocator);
@@ -76,20 +114,22 @@ pub fn main(init: std.process.Init) !void {
 
     if (tree.rootNode().hasError()) {
         // TODO: also provide with proper line number where the error occurred
-        std.log.err("Syntax Errors in Markup\n", .{});
+        std.log.err("Syntax Errors in Markup", .{});
         return;
     }
 
-    //------------------
-    var buf: [2000]u8 = undefined;
-    var file_writer = std.Io.File.stderr().writer(init.io, &buf);
+    var output_file = try std.Io.Dir.cwd().createFile(init.io, args.output.?, .{});
+    defer output_file.close(init.io);
+
+    var buf: [2048]u8 = undefined;
+    var file_writer = output_file.writer(init.io, &buf);
     const writer = &file_writer.interface;
 
     var render = renderer.HTMLRenderer{
         .allocator = allocator,
         .writer = writer,
         .source = source[frontmatter_end..],
-        .frontmatter = source[4..(frontmatter_end-4)],
+        .frontmatter = source[4..(frontmatter_end - 4)],
         .tree = tree,
         .ts_kinds = &ts_symbols.Symbols.init(lang),
         .stack = try std.ArrayList(renderer.OpenTag).initCapacity(allocator, @intCast(try std.math.divCeil(u32, tree.rootNode().descendantCount(), 3))),
