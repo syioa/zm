@@ -11,6 +11,7 @@ pub const Args = struct {
     output: ?[]const u8 = null,
     help: bool = false,
     version: bool = false,
+    stdout: bool = false,
 };
 
 /// parses the cli args
@@ -29,13 +30,15 @@ pub fn parseArgs(args_iterator: *std.process.Args.Iterator) ParseArgsError!Args 
             args.help = true;
         } else if (std.mem.eql(u8, arg, "-v") or std.mem.eql(u8, arg, "--version")) {
             args.version = true;
+        } else if (std.mem.eql(u8, arg, "-s") or std.mem.eql(u8, arg, "--stdout")) {
+            args.stdout = true;
         } else if (arg.len > 0 and arg[0] != '-') {
             args.input = arg;
         } else return error.UnexpectedArguments;
     }
 
     if (args.input == null) {
-        if (args.help or args.version) {} else return error.MissingInputFilePath;
+        if (args.help or args.version or args.stdout) {} else return error.MissingInputFilePath;
     }
 
     return args;

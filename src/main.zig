@@ -22,7 +22,8 @@ fn print_help_message(writer: *std.Io.Writer) !void {
         \\
         \\{s}
         \\    -h, --help             Print help information
-        \\    -o, --output <path>    Generate HTML file
+        \\    -o, --output <path>    Print the HTML file
+        \\    -s, --stdout           Print the HTML in stdout
         \\
     , .{
         build_options.version,
@@ -118,28 +119,52 @@ pub fn main(init: std.process.Init) !void {
         return;
     }
 
-    var output_file = try std.Io.Dir.cwd().createFile(init.io, args.output.?, .{});
-    defer output_file.close(init.io);
+    if (args.stdout) {
+        var buf: [2048]u8 = undefined;
+        var file_writer = std.Io.File.stdout().writer(init.io, &buf);
+        const writer = &file_writer.interface;
 
-    var buf: [2048]u8 = undefined;
-    var file_writer = output_file.writer(init.io, &buf);
-    const writer = &file_writer.interface;
+        var render = renderer.HTMLRenderer{
+            .allocator = allocator,
+            .writer = writer,
+            .source = source[frontmatter_end..],
+            .frontmatter = source[4..(frontmatter_end - 4)],
+            .tree = tree,
+            .ts_kinds = &ts_symbols.Symbols.init(lang),
+            .stack = try std.ArrayList(renderer.OpenTag).initCapacity(allocator, @intCast(try std.math.divCeil(u32, tree.rootNode().descendantCount(), 3))),
+            .list_state = .{
+                .numbering = try std.ArrayList(u32).initCapacity(allocator, 10),
+                .modes = try std.ArrayList(renderer.ListMode).initCapacity(allocator, 10),
+            },
+        };
 
-    var render = renderer.HTMLRenderer{
-        .allocator = allocator,
-        .writer = writer,
-        .source = source[frontmatter_end..],
-        .frontmatter = source[4..(frontmatter_end - 4)],
-        .tree = tree,
-        .ts_kinds = &ts_symbols.Symbols.init(lang),
-        .stack = try std.ArrayList(renderer.OpenTag).initCapacity(allocator, @intCast(try std.math.divCeil(u32, tree.rootNode().descendantCount(), 3))),
-        .list_state = .{
-            .numbering = try std.ArrayList(u32).initCapacity(allocator, 10),
-            .modes = try std.ArrayList(renderer.ListMode).initCapacity(allocator, 10),
-        },
-    };
+        try render.render();
 
-    try render.render();
+        try writer.flush();
+    } else {
+        var output_file = try std.Io.Dir.cwd().createFile(init.io, args.output.?, .{});
+        defer output_file.close(init.io);
 
-    try writer.flush();
+        var buf: [2048]u8 = undefined;
+        var file_writer = output_file.writer(init.io, &buf);
+        const writer = &file_writer.interface;
+
+        var render = renderer.HTMLRenderer{
+            .allocator = allocator,
+            .writer = writer,
+            .source = source[frontmatter_end..],
+            .frontmatter = source[4..(frontmatter_end - 4)],
+            .tree = tree,
+            .ts_kinds = &ts_symbols.Symbols.init(lang),
+            .stack = try std.ArrayList(renderer.OpenTag).initCapacity(allocator, @intCast(try std.math.divCeil(u32, tree.rootNode().descendantCount(), 3))),
+            .list_state = .{
+                .numbering = try std.ArrayList(u32).initCapacity(allocator, 10),
+                .modes = try std.ArrayList(renderer.ListMode).initCapacity(allocator, 10),
+            },
+        };
+
+        try render.render();
+
+        try writer.flush();
+    }
 }
