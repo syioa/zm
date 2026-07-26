@@ -96,9 +96,12 @@ pub const HTMLRenderer = struct {
                     \\<script id="frontmatter" type="application/kdl">{s}</script>
                     \\<script type="module">
                     \\import {{ parse }} from "https://esm.sh/@bgotink/kdl/json";
-                    \\const kdl_content = `- {{ ${{document.getElementById("frontmatter").textContent}} }}`;
-                    \\window.vars = parse(kdl_content);
-                    \\document.title = vars.title || "Title Not Provided";
+                    \\const content = document.getElementById("frontmatter").textContent;
+                    \\if (content.length !== 0) {{
+                    \\  const kdl_content = `- {{ ${{content}} }}`;
+                    \\  window.vars = parse(kdl_content);
+                    \\  document.title = vars.title || "Title Not Provided";
+                    \\}}
                     \\</script>
                     \\
                 , .{self.frontmatter});

@@ -88,11 +88,12 @@ pub fn main(init: std.process.Init) !void {
     const source = try std.Io.Dir.cwd().readFileAlloc(init.io, args.input.?, allocator, .limited(file_stat.size + 1));
     defer allocator.free(source);
 
-    const frontmatter_end = zm.utils.splitFrontmatter(source) catch {
+    const fm_end = zm.utils.splitFrontmatter(source) catch {
         std.log.err("Unclosed frontmatter in the given input file.\n", .{});
         return;
     };
-    const is_valid_kdl = try zm.utils.isValidKdl(allocator, source[0..frontmatter_end]);
+    const fm_start: usize = if (fm_end > 0) 4 else 0;
+    const is_valid_kdl = try zm.utils.isValidKdl(allocator, source[0..fm_end]);
     if (!is_valid_kdl) {
         std.log.err("Syntax Errors in frontmatter", .{});
         return;
@@ -108,7 +109,7 @@ pub fn main(init: std.process.Init) !void {
     defer lang.destroy();
 
     try parser.setLanguage(lang);
-    const tree = parser.parseString(source[frontmatter_end..], null) orelse {
+    const tree = parser.parseString(source[fm_end..], null) orelse {
         return error.FailedToParse;
     };
     defer tree.destroy();
@@ -127,8 +128,8 @@ pub fn main(init: std.process.Init) !void {
         var render = renderer.HTMLRenderer{
             .allocator = allocator,
             .writer = writer,
-            .source = source[frontmatter_end..],
-            .frontmatter = source[4..(frontmatter_end - 4)],
+            .source = source[fm_end..],
+            .frontmatter = source[fm_start..(fm_end - fm_start)],
             .tree = tree,
             .ts_kinds = &ts_symbols.Symbols.init(lang),
             .stack = try std.ArrayList(renderer.OpenTag).initCapacity(allocator, @intCast(try std.math.divCeil(u32, tree.rootNode().descendantCount(), 3))),
@@ -152,8 +153,8 @@ pub fn main(init: std.process.Init) !void {
         var render = renderer.HTMLRenderer{
             .allocator = allocator,
             .writer = writer,
-            .source = source[frontmatter_end..],
-            .frontmatter = source[4..(frontmatter_end - 4)],
+            .source = source[fm_end..],
+            .frontmatter = source[fm_start..(fm_end - fm_start)],
             .tree = tree,
             .ts_kinds = &ts_symbols.Symbols.init(lang),
             .stack = try std.ArrayList(renderer.OpenTag).initCapacity(allocator, @intCast(try std.math.divCeil(u32, tree.rootNode().descendantCount(), 3))),

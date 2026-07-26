@@ -54,6 +54,7 @@ pub fn splitFrontmatter(source: []const u8) !usize {
 
 /// Returns true if `input` is syntactically valid KDL.
 pub fn isValidKdl(gpa: std.mem.Allocator, input: []const u8) !bool {
+    if (input.len == 0) return true;
     const source = try gpa.dupeSentinel(u8, input, 0);
     defer gpa.free(source);
 
