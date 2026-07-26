@@ -36,13 +36,13 @@ Links are supported via this syntax `$link[text](url)`.
 Remember that the text can't contain any bold or italics or other links.
 To make a link bold(/italic) wrap the bold(/italic) chars around the whole link syntax.
 
-###### Unordered & Ordered Lists
+###### Ordered & Unordered Lists
 
 **Unordered Lists** start with usual `-` and a space is necessary after the hyphen(-). Unordered list items only span a single line and a newline is necessary after one.
 
-To start **Ordered Lists** you first have to write `$ol` and in the next line use numbers and a period(.) followed by a space to start a ordered list item. They too span a single line and a newline is necessary after one.
+To start **Ordered Lists** you first have to write `$ol[` and in the next line use numbers and a period(.) followed by a space to start a ordered list item. They too span a single line. At the end of the ordered list there must be a closing `]`.
 
-Both **Unordered & Ordered List Items** are nestable and you can mix Unordered and Ordered List Items. But remember that in the following eg. (though it is discouraged to write something like this, but still it's a feature)
+Both **Unordered & Ordered List Items** are nestable and you can mix Unordered and Ordered List Items. But remember that in the following example (though it is discouraged to write something like this, but still it's a feature)
 
 ```md
 - Item 1
@@ -53,18 +53,17 @@ Both **Unordered & Ordered List Items** are nestable and you can mix Unordered a
 
 ###### Frontmatter
 
-For the frontmatter this project uses [KDL](https://kdl.dev/). The usual `---` markers are supported for the start and end of the frontmatter content. The following is an eg.
+For the frontmatter this project uses [KDL](https://kdl.dev/). The usual `---` markers are supported for the start and end of the frontmatter content. eg.
 
 ```zm
 ---
-- {
-    title "Hello World"
-}
+title "Hello World"
+author "some name"
 ---
 
 ```
 
-Visit [KDL](https://kdl.dev/) to know the KDL syntax. Though remember that in `zm` frontmatter, there could only be one node at the top level of your KDL syntax and the title value is used for the title of the HTML document generated.
+Visit [KDL](https://kdl.dev/) to know the KDL syntax. Though remember that in `zm` frontmatter, the title value is used for the title of the HTML document generated.
 
 ###### Variables
 
@@ -72,7 +71,7 @@ All the properties defined in the frontmatter can be used as variables throughou
 
 Use the syntax `{variable_name}`. There could be an optional space between the curly brackets and the variable name.
 
-Nested variables and lists can be indexed via dot(`.`) syntax like this `{ some_parent.named_child.0 }`. (Yes lists are indexed via dots not square brackets(`[]`) like in most programming languages. )
+Nested variables and lists can be indexed via dot(`.`) syntax like this `{ some_parent.named_child.0 }`. (Yes lists are indexed via dots not square brackets(`[]`) unlike in most programming languages. )
 
 ###### Blockquote
 

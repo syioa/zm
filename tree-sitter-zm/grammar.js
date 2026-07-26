@@ -111,12 +111,12 @@ export default grammar({
     ),
 
     ordered_list: $ => seq(
-      token(/\$ol/),
-      /\n/,
+      token(/\$ol\[\n/),
       repeat1(choice(
         $.ordered_list_item,
         $.unordered_list_item,
       )),
+      /\]/
     ),
     ordered_list_item: $ => seq(
       optional(

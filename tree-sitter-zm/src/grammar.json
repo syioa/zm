@@ -457,12 +457,8 @@
           "type": "TOKEN",
           "content": {
             "type": "PATTERN",
-            "value": "\\$ol"
+            "value": "\\$ol\\[\\n"
           }
-        },
-        {
-          "type": "PATTERN",
-          "value": "\\n"
         },
         {
           "type": "REPEAT1",
@@ -479,6 +475,10 @@
               }
             ]
           }
+        },
+        {
+          "type": "PATTERN",
+          "value": "\\]"
         }
       ]
     },
