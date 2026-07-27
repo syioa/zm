@@ -1,5 +1,6 @@
 const zm = @import("../root.zig");
 const std = @import("std");
+const css_styles = @import("css.zig").css_styles;
 
 const ts = zm.tree_sitter;
 const ts_symbols = zm.ts_symbols;
@@ -91,6 +92,7 @@ pub const HTMLRenderer = struct {
                     \\<head>
                     \\    <meta charset="UTF-8">
                     \\    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    \\    <style>{s}</style>
                     \\</head>
                     \\<body>
                     \\<script id="frontmatter" type="application/kdl">{s}</script>
@@ -104,7 +106,7 @@ pub const HTMLRenderer = struct {
                     \\}}
                     \\</script>
                     \\
-                , .{self.frontmatter});
+                , .{css_styles, self.frontmatter});
 
                 try self.stack.append(self.allocator, .{ .idx = node.id });
             },
@@ -359,14 +361,12 @@ pub const HTMLRenderer = struct {
             try self.list_state.modes.append(self.allocator, .unordered);
         }
 
-        try self.writer.print(
-            "<li style=\"--level: {d};\" data-path=\"{any}\" data-modes=\"{any}\">",
-            .{
-                current_level - 1,
-                self.list_state.numbering.items,
-                self.list_state.modes.items,
-            },
-        );
+        try self.writer.print("<li style=\"--level: {d};\" data-path=\"", .{current_level-1});
+        try self.writeListNumbering('.');
+        try self.writer.writeAll("\" data-modes=\"");
+        try self.writeListModes(',');
+        try self.writer.writeAll("\">");
+
         try self.stack.append(self.allocator, .{ .idx = node.id });
     }
 
@@ -409,14 +409,37 @@ pub const HTMLRenderer = struct {
             try self.list_state.modes.append(self.allocator, .ordered);
         }
 
-        try self.writer.print(
-            "<li style=\"--level: {d};\" data-path=\"{any}\" data-modes=\"{any}\">",
-            .{
-                current_level - 1,
-                self.list_state.numbering.items,
-                self.list_state.modes.items,
-            },
-        );
+        try self.writer.print("<li style=\"--level: {d};\" data-path=\"", .{current_level-1});
+        try self.writeListNumbering('.');
+        try self.writer.writeAll("\" data-modes=\"");
+        try self.writeListModes(',');
+        try self.writer.writeAll("\">");
+
         try self.stack.append(self.allocator, .{ .idx = node.id });
+    }
+
+    fn writeListNumbering(self: *const HTMLRenderer, sep: u8) !void {
+        for (self.list_state.numbering.items, 0..) |item, i| {
+            if (i > 0) {
+                try self.writer.writeByte(sep);
+            }
+            try self.writer.print("{d}", .{item});
+        }
+    }
+
+    fn writeListModes(self: *const HTMLRenderer, sep: u8) !void {
+        for (self.list_state.modes.items, 0..) |mode, i| {
+            if (i > 0) {
+                try self.writer.writeByte(sep);
+            }
+            switch (mode) {
+                .ordered => {
+                    try self.writer.writeAll("ordered");
+                },
+                .unordered => {
+                    try self.writer.writeAll("unordered");
+                }
+            }
+        }
     }
 };
