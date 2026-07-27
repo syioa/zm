@@ -90,6 +90,7 @@ pub const HTMLRenderer = struct {
                     \\<!doctype html>
                     \\<html lang="en">
                     \\<head>
+                    \\    <link rel="modulepreload" href="https://esm.sh/@bgotink/kdl@0.4.0/es2022/json.bundle.mjs">
                     \\    <meta charset="UTF-8">
                     \\    <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     \\    <style>{s}</style>
@@ -97,7 +98,7 @@ pub const HTMLRenderer = struct {
                     \\<body>
                     \\<script id="frontmatter" type="application/kdl">{s}</script>
                     \\<script type="module">
-                    \\import {{ parse }} from "https://esm.sh/@bgotink/kdl/json";
+                    \\import {{ parse }} from "https://esm.sh/@bgotink/kdl@0.4.0/es2022/json.bundle.mjs";
                     \\const content = document.getElementById("frontmatter").textContent;
                     \\if (content.length !== 0) {{
                     \\  const kdl_content = `- {{ ${{content}} }}`;
