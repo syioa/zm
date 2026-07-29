@@ -1,4 +1,89 @@
+pub const catppuccin_css = @import("assets/catppuccin.zig").catppuccin_css;
+
 pub const css_styles =
+    \\<style>
+
+    // core
+    \\:root {
+    \\    color-scheme: light dark;
+    \\    -webkit-text-size-adjust: 100%;
+    \\}
+    \\
+    \\*,
+    \\*::before,
+    \\*::after {
+    \\    box-sizing: border-box;
+    \\    min-width: 0;
+    \\}
+    \\
+    \\html {
+    \\    scroll-behavior: smooth;
+    \\}
+    \\
+    \\body {
+    \\    margin: 0;
+    \\    min-width: 320px;
+    \\
+    \\    font-family:
+    \\        Inter,
+    \\        "SF Pro Text",
+    \\        "Segoe UI",
+    \\        Roboto,
+    \\        sans-serif;
+    \\
+    \\    font-size: clamp(1rem, 0.95rem + 0.2vw, 1.125rem);
+    \\    line-height: 1.65;
+    \\
+    \\    color: var(--ctp-text);
+    \\    background: var(--ctp-base);
+    \\
+    \\    text-rendering: optimizeLegibility;
+    \\    -webkit-font-smoothing: antialiased;
+    \\}
+    \\
+    \\::selection {
+    \\    background: var(--ctp-blue);
+    \\    color: var(--ctp-base);
+    \\}
+    \\
+    \\a {
+    \\    color: var(--ctp-blue);
+    \\    text-decoration: none;
+    \\    text-underline-offset: 0.15em;
+    \\    transition: color 150ms ease;
+    \\}
+    \\
+    \\a:hover {
+    \\    color: var(--ctp-sapphire);
+    \\    text-decoration: underline;
+    \\}
+    \\
+    \\img,
+    \\svg,
+    \\video {
+    \\    display: block;
+    \\    max-width: 100%;
+    \\    height: auto;
+    \\}
+    \\
+    \\button,
+    \\input,
+    \\select,
+    \\textarea {
+    \\    font: inherit;
+    \\}
+    \\
+    \\button {
+    \\    cursor: pointer;
+    \\    touch-action: manipulation;
+    \\}
+    \\
+    \\hr {
+    \\    margin-block: clamp(1.5rem, 4vw, 2.5rem);
+    \\    border: 0;
+    \\    border-top: 1px solid var(--ctp-surface1);
+    \\}
+
     // unordered lists
     \\ul {
     \\    list-style: none;
@@ -22,7 +107,7 @@ pub const css_styles =
     \\    width: 1rem;
     \\    text-align: center;
     \\}
-    
+
     // ordered lists
     \\ol {
     \\    list-style: none;
@@ -47,6 +132,98 @@ pub const css_styles =
     \\    font-variant-numeric: tabular-nums;
     \\    white-space: nowrap;
     \\}
+
+    // theme switcher
+    \\header {
+    \\    display: flex;
+    \\    align-items: center;
+    \\}
+    \\
+    \\.theme-select-wrapper {
+    \\    position: relative;
+    \\    display: inline-block;
+    \\    margin-left: auto;
+    \\}
+    \\
+    \\#theme-select {
+    \\    appearance: none;
+    \\    -webkit-appearance: none;
+    \\
+    \\    min-width: 10rem;
+    \\    padding: 0.55rem 2.5rem 0.55rem 0.9rem;
+    \\
+    \\    font: inherit;
+    \\    line-height: 1.2;
+    \\
+    \\    color: var(--ctp-text);
+    \\    background-color: var(--ctp-surface0);
+    \\
+    \\    border: 1px solid var(--ctp-surface2);
+    \\    border-radius: 0.6rem;
+    \\
+    \\    cursor: pointer;
+    \\    outline: none;
+    \\
+    \\    transition:
+    \\        background-color 150ms ease,
+    \\        border-color 150ms ease,
+    \\        box-shadow 150ms ease,
+    \\        color 150ms ease;
+    \\}
+    \\
+    \\#theme-select:hover {
+    \\    background-color: var(--ctp-surface1);
+    \\    border-color: var(--ctp-overlay0);
+    \\}
+    \\
+    \\#theme-select:focus-visible {
+    \\    border-color: var(--ctp-blue);
+    \\    box-shadow:
+    \\        0 0 0 3px color-mix(in srgb, var(--ctp-blue) 25%, transparent);
+    \\}
+    \\
+    \\#theme-select:active {
+    \\    background-color: var(--ctp-surface2);
+    \\}
+    \\
+    \\#theme-select option {
+    \\    color: var(--ctp-text);
+    \\    background-color: var(--ctp-base);
+    \\}
+    \\
+    \\.theme-select-arrow {
+    \\    position: absolute;
+    \\    top: 50%;
+    \\    right: 0.85rem;
+    \\
+    \\    transform: translateY(-50%);
+    \\    pointer-events: none;
+    \\
+    \\    display: flex;
+    \\    align-items: center;
+    \\    justify-content: center;
+    \\
+    \\    color: var(--ctp-subtext0);
+    \\
+    \\    transition:
+    \\        color 150ms ease,
+    \\        transform 150ms ease;
+    \\}
+    \\
+    \\.theme-select-wrapper:hover .theme-select-arrow {
+    \\    color: var(--ctp-text);
+    \\}
+    \\
+    \\#theme-select:focus-visible + .theme-select-arrow {
+    \\    color: var(--ctp-blue);
+    \\}
+    \\
+    \\.theme-select-arrow svg {
+    \\    width: 0.9rem;
+    \\    height: 0.9rem;
+    \\    display: block;
+    \\}
+    \\</style>
 ;
 
 pub const frontmatter_js =
@@ -116,5 +293,58 @@ pub const frontmatter_js =
     \\}
     \\
     \\renderVariables();
+    \\</script>
+;
+
+pub const theme_toggle =
+    \\<header>
+    \\    <div class="theme-select-wrapper">
+    \\        <select id="theme-select">
+    \\            <option value="latte">Latte</option>
+    \\            <option value="frappe">Frappé</option>
+    \\            <option value="macchiato">Macchiato</option>
+    \\            <option value="mocha">Mocha</option>
+    \\        </select>
+    \\        <span class="theme-select-arrow" aria-hidden="true">
+    \\            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    \\                <path
+    \\                    d="M4 6.5L8 10.5L12 6.5"
+    \\                    stroke="currentColor"
+    \\                    stroke-width="1.75"
+    \\                    stroke-linecap="round"
+    \\                    stroke-linejoin="round"
+    \\                />
+    \\            </svg>
+    \\        </span>
+    \\    </div>
+    \\</header>
+    \\
+    \\<script id="theme-toggle">
+    \\    const THEME_KEY = "theme";
+    \\    
+    \\    const select = document.getElementById("theme-select");
+    \\    const root = document.documentElement;
+    \\    
+    \\    function applyTheme(theme) {
+    \\        root.dataset.theme = theme;
+    \\    }
+    \\    
+    \\    let theme = localStorage.getItem(THEME_KEY);
+    \\    
+    \\    if (theme === null) {
+    \\        theme = window.matchMedia("(prefers-color-scheme: dark)").matches
+    \\            ? "macchiato"
+    \\            : "latte";
+    \\    }
+    \\    
+    \\    applyTheme(theme);
+    \\    select.value = theme;
+    \\    
+    \\    select.addEventListener("change", () => {
+    \\        const theme = select.value;
+    \\    
+    \\        applyTheme(theme);
+    \\        localStorage.setItem(THEME_KEY, theme);
+    \\    });
     \\</script>
 ;

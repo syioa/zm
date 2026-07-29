@@ -67,10 +67,7 @@ pub const HTMLRenderer = struct {
 
                 const parent_node = cursor.node();
                 const parent_kind = self.ts_kinds.match(parent_node.kindId());
-                try self.leave(&parent_node, parent_kind);
-
-                if (cursor.gotoNextSibling()) {
-                    found_sibling = true;
+                try self.leave(&parent_node, parent_kind); if (cursor.gotoNextSibling()) { found_sibling = true;
                     break;
                 }
             }
@@ -86,29 +83,7 @@ pub const HTMLRenderer = struct {
     ) Error!void {
         switch (kind) {
             .document => {
-                try self.writer.print(
-                    \\<!doctype html>
-                    \\<html lang="en">
-                    \\<head>
-                    \\    <link rel="modulepreload" href="https://esm.sh/@bgotink/kdl@0.4.0/es2022/json.bundle.mjs">
-                    \\    <meta charset="UTF-8">
-                    \\    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    \\    <style>{s}</style>
-                    \\</head>
-                    \\<body>
-                    \\<script id="frontmatter" type="application/kdl">{s}</script>
-                    \\<script type="module">
-                    \\import {{ parse }} from "https://esm.sh/@bgotink/kdl@0.4.0/es2022/json.bundle.mjs";
-                    \\const content = document.getElementById("frontmatter").textContent;
-                    \\if (content.length !== 0) {{
-                    \\  const kdl_content = `- {{ ${{content}} }}`;
-                    \\  window.vars = parse(kdl_content);
-                    \\  document.title = vars.title || "Title Not Provided";
-                    \\}}
-                    \\</script>
-                    \\
-                , .{ assets.css_styles, self.frontmatter });
-
+                try writeDocumentOpenContent(self.writer, self.frontmatter);
                 try self.stack.append(self.allocator, .{ .idx = node.id });
             },
             .heading => {
@@ -187,11 +162,7 @@ pub const HTMLRenderer = struct {
         if (open_tag.idx == node.id) {
             switch (kind) {
                 .document => {
-                    try self.writer.print(
-                        \\{s}</body></html>
-                    ,
-                        .{assets.frontmatter_js},
-                    );
+                    try writeDocumentCloseContent(self.writer);
                     _ = self.stack.pop();
                 },
                 .heading => {
@@ -379,3 +350,43 @@ pub const HTMLRenderer = struct {
         }
     }
 };
+
+fn writeDocumentOpenContent(writer: *std.Io.Writer, frontmatter: []const u8) !void {
+    try writer.writeAll(
+        \\<!doctype html>
+        \\<html lang="en">
+        \\<head>
+        \\    <link rel="modulepreload" href="https://esm.sh/@bgotink/kdl@0.4.0/es2022/json.bundle.mjs">
+        \\    <meta charset="UTF-8">
+        \\    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    ++ assets.catppuccin_css ++
+        assets.css_styles ++
+        \\</head>
+        \\<body>
+    );
+    
+    try writer.print(
+        \\<script id="frontmatter" type="application/kdl">{s}</script>
+    , .{frontmatter});
+
+    try writer.writeAll(
+        \\<script type="module">
+        \\import { parse } from "https://esm.sh/@bgotink/kdl@0.4.0/es2022/json.bundle.mjs";
+        \\const content = document.getElementById("frontmatter").textContent;
+        \\if (content.length !== 0) {
+        \\  const kdl_content = `- { ${content} }`;
+        \\  window.vars = parse(kdl_content);
+        \\  document.title = vars.title || "Title Not Provided";
+        \\}
+        \\</script>
+    ++ assets.theme_toggle ++
+        \\
+    );
+}
+
+fn writeDocumentCloseContent(writer: *std.Io.Writer) !void {
+    try writer.writeAll(
+        assets.frontmatter_js ++
+        \\</body></html>
+    );
+}
