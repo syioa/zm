@@ -133,6 +133,101 @@ pub const css_styles =
     \\    white-space: nowrap;
     \\}
 
+    // toolbar
+    \\.toolbar {
+    \\    position: fixed;
+    \\    top: 0;
+    \\    left: 50%;
+    \\
+    \\    transform: translate(-50%, calc(-100% + 8px));
+    \\
+    \\    z-index: 1000;
+    \\    overflow: visible;
+    \\
+    \\    transition: transform 180ms ease;
+    \\}
+    \\
+    \\.toolbar:hover,
+    \\.toolbar:focus-within,
+    \\.toolbar.visible {
+    \\    transform: translate(-50%, 0);
+    \\}
+    \\
+    \\.toolbar-content {
+    \\    display: flex;
+    \\    align-items: center;
+    \\    justify-content: center;
+    \\
+    \\    padding: 0.65rem 0.9rem;
+    \\
+    \\    background: color-mix(in srgb, var(--ctp-mantle) 92%, transparent);
+    \\    backdrop-filter: blur(16px);
+    \\
+    \\    border: 1px solid var(--ctp-surface1);
+    \\    border-top: none;
+    \\
+    \\    border-radius: 0 0 1rem 1rem;
+    \\
+    \\    box-shadow:
+    \\        0 8px 24px rgb(0 0 0 / 0.18);
+    \\}
+    \\
+    \\.toolbar::after {
+    \\    content: "";
+    \\
+    \\    position: absolute;
+    \\    left: 50%;
+    \\    bottom: -8px;
+    \\
+    \\    translate: -50% 0;
+    \\
+    \\    width: 72px;
+    \\    height: 4px;
+    \\
+    \\    border-radius: 999px;
+    \\
+    \\    background:
+    \\        linear-gradient(
+    \\            90deg,
+    \\            var(--ctp-blue),
+    \\            var(--ctp-lavender)
+    \\        );
+    \\
+    \\    opacity: 0.4;
+    \\
+    \\    transition: opacity 150ms ease;
+    \\
+    \\    pointer-events: none;
+    \\}
+    \\
+    \\.toolbar:hover::after {
+    \\    opacity: 1;
+    \\}
+    \\
+    \\.toolbar::before {
+    \\    content: "";
+    \\
+    \\    position: absolute;
+    \\
+    \\    left: 50%;
+    \\    bottom: -16px;
+    \\
+    \\    translate: -50% 0;
+    \\
+    \\    width: 120px;
+    \\    height: 24px;
+    \\}
+    \\
+    \\@media (prefers-reduced-motion: reduce) {
+    \\    .toolbar {
+    \\        transition: none;
+    \\    }
+    \\
+    \\    .toolbar::after {
+    \\        transition: none;
+    \\    }
+    \\}
+    
     // theme switcher
     \\header {
     \\    display: flex;
@@ -297,7 +392,8 @@ pub const frontmatter_js =
 ;
 
 pub const theme_toggle =
-    \\<header>
+    \\<header class="toolbar">
+    \\  <div class"toolbar-content">
     \\    <div class="theme-select-wrapper">
     \\        <select id="theme-select">
     \\            <option value="latte">Latte</option>
@@ -317,34 +413,50 @@ pub const theme_toggle =
     \\            </svg>
     \\        </span>
     \\    </div>
+    \\  </div>
     \\</header>
     \\
-    \\<script id="theme-toggle">
-    \\    const THEME_KEY = "theme";
-    \\    
-    \\    const select = document.getElementById("theme-select");
-    \\    const root = document.documentElement;
-    \\    
-    \\    function applyTheme(theme) {
-    \\        root.dataset.theme = theme;
-    \\    }
-    \\    
-    \\    let theme = localStorage.getItem(THEME_KEY);
-    \\    
-    \\    if (theme === null) {
-    \\        theme = window.matchMedia("(prefers-color-scheme: dark)").matches
-    \\            ? "macchiato"
-    \\            : "latte";
-    \\    }
-    \\    
+    \\<script id="theme-toggle toolbar">
+    \\const THEME_KEY = "theme";
+    \\
+    \\const select = document.getElementById("theme-select");
+    \\const root = document.documentElement;
+    \\
+    \\function applyTheme(theme) {
+    \\    root.dataset.theme = theme;
+    \\}
+    \\
+    \\let theme = localStorage.getItem(THEME_KEY);
+    \\
+    \\if (theme === null) {
+    \\    theme = window.matchMedia("(prefers-color-scheme: dark)").matches
+    \\        ? "macchiato"
+    \\        : "latte";
+    \\}
+    \\
+    \\applyTheme(theme);
+    \\select.value = theme;
+    \\
+    \\select.addEventListener("change", () => {
+    \\    const theme = select.value;
+    \\
     \\    applyTheme(theme);
-    \\    select.value = theme;
-    \\    
-    \\    select.addEventListener("change", () => {
-    \\        const theme = select.value;
-    \\    
-    \\        applyTheme(theme);
-    \\        localStorage.setItem(THEME_KEY, theme);
-    \\    });
+    \\    localStorage.setItem(THEME_KEY, theme);
+    \\});
+    \\
+    \\const toolbar = document.querySelector(".toolbar");
+    \\
+    \\let hideTimer;
+    \\
+    \\toolbar.addEventListener("mouseenter", () => {
+    \\    clearTimeout(hideTimer);
+    \\    toolbar.classList.add("visible");
+    \\});
+    \\
+    \\toolbar.addEventListener("mouseleave", () => {
+    \\    hideTimer = setTimeout(() => {
+    \\        toolbar.classList.remove("visible");
+    \\    }, 150);
+    \\});
     \\</script>
 ;
