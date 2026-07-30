@@ -104,7 +104,7 @@
           "members": [
             {
               "type": "PATTERN",
-              "value": "[^\\n\\\\\\#\\*\\_\\$\\-\\{>]+"
+              "value": "[^\\n\\\\\\#\\*\\_\\$\\{>]+"
             },
             {
               "type": "SEQ",
@@ -380,6 +380,13 @@
       "type": "SEQ",
       "members": [
         {
+          "type": "TOKEN",
+          "content": {
+            "type": "PATTERN",
+            "value": "\\$ul\\[\\n"
+          }
+        },
+        {
           "type": "REPEAT1",
           "content": {
             "type": "CHOICE",
@@ -394,6 +401,10 @@
               }
             ]
           }
+        },
+        {
+          "type": "PATTERN",
+          "value": "\\]"
         }
       ]
     },

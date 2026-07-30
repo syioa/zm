@@ -37,7 +37,7 @@ export default grammar({
     text: _ => token('don\'t use me'),
     attr: _ => token('don\'t use me'),
     _normal_text: _ => token(repeat1(choice(
-      /[^\n\\\#\*\_\$\-\{>]+/,
+      /[^\n\\\#\*\_\$\{>]+/,
       seq('\\', /./) // escape
     ))),
     _link_text: _ => token(repeat1(choice(
@@ -97,10 +97,12 @@ export default grammar({
     )),
 
     unordered_list: $ => seq(
+      token(/\$ul\[\n/),
       repeat1(choice(
         $.unordered_list_item,
         $.ordered_list_item,
       )),
+      /\]/,
     ),
     unordered_list_item: $ => seq(
       optional(alias(token(repeat('  ')), $.attr)),
@@ -116,7 +118,7 @@ export default grammar({
         $.ordered_list_item,
         $.unordered_list_item,
       )),
-      /\]/
+      /\]/,
     ),
     ordered_list_item: $ => seq(
       optional(

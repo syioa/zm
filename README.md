@@ -21,6 +21,9 @@ All the dependencies will be fetched by the Zig compiler.
 
 ## Features
 
+>[!note]
+> Newlines and blank lines are two different things and both of them are not used interchangeably in this document.
+
 Following features are supported —
 
 ###### Bold And Italic
@@ -38,9 +41,10 @@ To make a link bold(/italic) wrap the bold(/italic) chars around the whole link 
 
 ###### Ordered & Unordered Lists
 
-**Unordered Lists** start with usual `-` and a space is necessary after the hyphen(-). Unordered list items only span a single line and a newline is necessary after one.
+To start **Unordered Lists** you first have to start an unordered list block with `$ul[` and in the next line use **Unordered List Item** syntax; at the end of unordered list block you need to close it via a `]`.
+**Unordered List Item** start with usual `-` and a space is necessary after the hyphen(-). Unordered list items only span a single line and a newline is necessary after one.
 
-To start **Ordered Lists** you first have to write `$ol[` and in the next line use numbers and a period(.) followed by a space to start a ordered list item. They too span a single line. At the end of the ordered list there must be a closing `]`.
+To start **Ordered Lists** you first have to start an ordered list block with `$ol[` and in the next line use numbers and a period(.) followed by a space to start a ordered list item. They too span a single line. At the end of the ordered list there must be a closing `]`.
 
 Both **Unordered & Ordered List Items** are nestable and you can mix Unordered and Ordered List Items. But remember that in the following example (though it is discouraged to write something like this, but still it's a feature)
 
