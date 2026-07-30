@@ -78,6 +78,10 @@
         {
           "type": "SYMBOL",
           "name": "blockquote"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "hr"
         }
       ]
     },
@@ -574,6 +578,10 @@
           }
         }
       ]
+    },
+    "hr": {
+      "type": "PATTERN",
+      "value": "\\$---\\n"
     },
     "newline": {
       "type": "STRING",

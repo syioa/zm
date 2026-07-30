@@ -75,6 +75,10 @@
           "named": true
         },
         {
+          "type": "hr",
+          "named": true
+        },
+        {
           "type": "newline",
           "named": true
         },
@@ -357,6 +361,10 @@
   },
   {
     "type": "heading_marker",
+    "named": true
+  },
+  {
+    "type": "hr",
     "named": true
   },
   {

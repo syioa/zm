@@ -29,6 +29,7 @@ export default grammar({
       $.ordered_list,
       $.paragraph,
       $.blockquote,
+      $.hr,
     ),
 
     // #region _inline_content
@@ -136,6 +137,8 @@ export default grammar({
       /> /,
       repeat1($._inline_content)
     ),
+
+    hr: _ => /\$---\n/,
     // #endregion
 
     // special tokens

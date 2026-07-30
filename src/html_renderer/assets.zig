@@ -80,8 +80,9 @@ pub const css_styles =
     \\
     \\hr {
     \\    margin-block: clamp(1.5rem, 4vw, 2.5rem);
-    \\    border: 0;
-    \\    border-top: 1px solid var(--ctp-surface1);
+    \\    border: none;
+    \\    height: 2px;
+    \\    background: var(--ctp-surface1);
     \\}
 
     // unordered lists

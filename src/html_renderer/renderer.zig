@@ -148,6 +148,9 @@ pub const HTMLRenderer = struct {
                 try self.writer.writeAll("<blockquote>");
                 try self.stack.append(self.allocator, .{ .idx = node.id });
             },
+            .hr => {
+                try self.writer.writeAll("<hr>");
+            },
             .attr => {},
             .url => {},
             .heading_marker => {},

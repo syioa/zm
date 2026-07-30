@@ -28,9 +28,9 @@ Following features are supported —
 
 ###### Bold And Italic
 
-Use `**` chars around the word, phrase or sentence for **bold**.
+Use `*` chars around the word, phrase or sentence for **bold**.
 
-Use `__` chars around the word, phrase or sentence for _italic_.
+Use `_` chars around the word, phrase or sentence for _italic_.
 
 ###### Links
 
@@ -85,6 +85,10 @@ The syntax is similar to markdown, though. Just use `>` followed by a space.
 
 >[!note]
 > Nested `blockquote`s are not supported as it is weird to have nested `<blockquote>` tags in HTML.
+
+###### Horizontal Rule
+
+Taking inspiration from markdown the `horizontal rule` or a `divider` syntax is like `$---`. Also remember that `zm` is strict about the number of hyphens used in the `horizontal rule` and it is necessary to have only 3 hyphens. Newline is necessary at the end.
 
 
 ## Usage
