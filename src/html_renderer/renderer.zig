@@ -226,7 +226,14 @@ pub const HTMLRenderer = struct {
                     try self.writer.writeAll("</blockquote>");
                     _ = self.stack.pop();
                 },
-                else => {},
+                .attr => {},
+                .hr => {},
+                .url => {},
+                .heading_marker => {},
+                .newline => {},
+                .text => {},
+                .variable => {},
+                .unknown => {},
             }
         }
     }
