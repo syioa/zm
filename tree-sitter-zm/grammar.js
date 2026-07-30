@@ -59,24 +59,24 @@ export default grammar({
     ),
 
     bold: $ => seq(
-      '**',
+      '*',
       repeat1(choice(
         $.italic,
         $.link,
         alias($._normal_text, $.text),
         $.variable,
       )),
-      '**',
+      '*',
     ),
     italic: $ => seq(
-      '__',
+      '_',
       repeat1(choice(
         $.bold,
         $.link,
         alias($._normal_text, $.text),
         $.variable,
       )),
-      '__',
+      '_',
     ),
     link: $ => seq(
       '$link',
