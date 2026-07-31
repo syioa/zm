@@ -1,6 +1,7 @@
 const std = @import("std");
 const zm = @import("root.zig");
 const kdl = zm.kdl;
+const ts = zm.tree_sitter;
 
 /// writes the provided string, unescaping the contents
 pub fn writeUnescaped(writer: *std.Io.Writer, escaped_str: []const u8) !void {
@@ -50,6 +51,36 @@ pub fn splitFrontmatter(source: []const u8) !usize {
     }
 
     return error.UnclosedDelimiter;
+}
+
+pub fn findErrorsPos(root: *const ts.Node) void {
+    if (!root.hasError()) return;
+
+    var cursor = root.walk();
+    defer cursor.destroy();
+
+    while (true) {
+        const node = cursor.node();
+
+        if (node.isError() or node.isMissing()) {
+            const start = node.startPoint();
+            std.debug.print(
+                "Syntax error at line {d}, column {d} (node kind: \"{s}\")",
+                .{ start.row + 1, start.column + 1, node.kind() },
+            );
+        }
+
+        // Only descend into children if this subtree actually has an error
+        if (node.hasError() and cursor.gotoFirstChild()) {
+            continue;
+        }
+
+        // No children (or no error below) -> move to next sibling,
+        // walking back up until we find one or exit the tree
+        while (!cursor.gotoNextSibling()) {
+            if (!cursor.gotoParent()) return; // back at root, done
+        }
+    }
 }
 
 /// Returns true if `input` is syntactically valid KDL.

@@ -13,6 +13,8 @@ const ts_zm = zm.tree_sitter_zm;
 
 const ts_symbols = zm.ts_symbols;
 
+const utils = zm.utils;
+
 fn print_help_message(writer: *std.Io.Writer) !void {
     try writer.print(
         \\zm {s}
@@ -117,6 +119,7 @@ pub fn main(init: std.process.Init) !void {
     if (tree.rootNode().hasError()) {
         // TODO: also provide with proper line number where the error occurred
         std.log.err("Syntax Errors in Markup", .{});
+        utils.findErrorsPos(&tree.rootNode());
         return;
     }
 
