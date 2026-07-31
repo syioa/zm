@@ -18,6 +18,7 @@ pub const css_styles =
     \\
     \\html {
     \\    scroll-behavior: smooth;
+    \\    font-size: 100%;
     \\}
     \\
     \\body {
@@ -32,18 +33,32 @@ pub const css_styles =
     \\        sans-serif;
     \\
     \\    font-size: clamp(1rem, 0.95rem + 0.2vw, 1.125rem);
-    \\    line-height: 1.65;
+    \\    line-height: 1.7;
     \\
     \\    color: var(--ctp-text);
     \\    background: var(--ctp-base);
     \\
     \\    text-rendering: optimizeLegibility;
     \\    -webkit-font-smoothing: antialiased;
+    \\    -webkit-text-size-adjust: 100%;
+    \\
+    \\    max-width: 75ch;
+    \\    margin-inline: auto;
+    \\    padding-inline: clamp(1rem, 2vw, 2rem);
     \\}
     \\
     \\::selection {
     \\    background: var(--ctp-blue);
     \\    color: var(--ctp-base);
+    \\}
+    \\
+    \\p,
+    \\li,
+    \\blockquote,
+    \\td,
+    \\th {
+    \\    font-size: inherit;
+    \\    line-height: inherit;
     \\}
     \\
     \\a {
@@ -85,6 +100,58 @@ pub const css_styles =
     \\    background: var(--ctp-surface1);
     \\}
 
+    // headings
+    \\h1 {
+    \\    font-size: clamp(2.2rem, 1.4rem + 2.6vw, 4rem);
+    \\    line-height: 1.1;
+    \\    letter-spacing: -0.04em;
+    \\}
+    \\
+    \\h2 {
+    \\    font-size: clamp(1.8rem, 1.3rem + 1.8vw, 3rem);
+    \\    line-height: 1.15;
+    \\    letter-spacing: -0.03em;
+    \\}
+    \\
+    \\h3 {
+    \\    font-size: clamp(1.5rem, 1.2rem + 1vw, 2.25rem);
+    \\    line-height: 1.2;
+    \\    letter-spacing: -0.02em;
+    \\}
+    \\
+    \\h4 {
+    \\    font-size: clamp(1.25rem, 1.1rem + 0.5vw, 1.75rem);
+    \\    line-height: 1.3;
+    \\}
+    \\
+    \\h5 {
+    \\    font-size: clamp(1.1rem, 1.05rem + 0.25vw, 1.35rem);
+    \\    line-height: 1.35;
+    \\}
+    \\
+    \\h6 {
+    \\    font-size: clamp(1rem, 0.95rem + 0.15vw, 1.15rem);
+    \\    line-height: 1.4;
+    \\    text-transform: uppercase;
+    \\    letter-spacing: 0.08em;
+    \\}
+
+    // lists
+    \\ul,
+    \\ol {
+    \\    padding-inline-start: 1.5em;
+    \\}
+    \\
+    \\li + li {
+    \\    margin-top: 0.35em;
+    \\}
+
+    // blockquote
+    \\blockquote {
+    \\    font-size: clamp(1.05rem, 1rem + 0.2vw, 1.2rem);
+    \\    line-height: 1.7;
+    \\}
+    
     // unordered lists
     \\ul {
     \\    list-style: none;
@@ -319,6 +386,41 @@ pub const css_styles =
     \\    height: 0.9rem;
     \\    display: block;
     \\}
+
+    // code
+    \\code,
+    \\kbd,
+    \\samp {
+    \\    font-size: 0.9em;
+    \\}
+    \\
+    \\pre {
+    \\    font-size: clamp(0.9rem, 0.88rem + 0.1vw, 1rem);
+    \\    line-height: 1.6;
+    \\}
+
+    // spacing
+    \\h1,
+    \\h2,
+    \\h3,
+    \\h4,
+    \\h5,
+    \\h6 {
+    \\    margin-block: clamp(1.5rem, 1rem + 1vw, 2.5rem)
+    \\                  clamp(0.75rem, 0.5rem + 0.3vw, 1rem);
+    \\    font-weight: 700;
+    \\    scroll-margin-top: 5rem;
+    \\}
+    \\
+    \\p,
+    \\ul,
+    \\ol,
+    \\pre,
+    \\blockquote,
+    \\table {
+    \\    margin-block: clamp(0.9rem, 0.7rem + 0.4vw, 1.4rem);
+    \\}
+
     \\</style>
 ;
 
