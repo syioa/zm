@@ -14,7 +14,7 @@ export default grammar({
   rules: {
     document: $ => repeat(seq(
       optional($._block_content),
-      $.newline,
+      /\n/,
     )),
     _inline_content: $ => choice(
       $.bold,
@@ -131,11 +131,11 @@ export default grammar({
       /\n/,
     ),
 
-    paragraph: $ => repeat1(seq(repeat1($._inline_content), $.newline)),
+    paragraph: $ => repeat1(seq(repeat1($._inline_content), /\n/)),
 
     blockquote: $ => seq(
       /> /,
-      repeat1($._inline_content)
+      repeat1($._inline_content),
     ),
 
     hr: _ => /\$---\n/,
