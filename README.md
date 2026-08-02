@@ -24,7 +24,21 @@ All the dependencies will be fetched by the Zig compiler.
 >[!note]
 > Newlines and blank lines are two different things and both of them are not used interchangeably in this document.
 
+>[!note]
+> **Inline & Block Functions** are special syntaxes.
+>
+> **Inline Function** don't need a newline and you can continue to write more text in the same line but **Block Functions** do need a newline.
+>
+> Start an **Inline function** with `@` symbol and **Block Functions** with `#` symbol (remember headings are not functions though they start with `#`s).
+>
+> If there is a space after `@` symbol it just acts like normal text,
+> but `#` symbol doesn't since `#` is also used for heading and if you want to include it in your markup you need to escape it like `\#`.
+
 Following features are supported —
+
+###### Escaping
+
+**Every special char** needs escaping if you want to see it in the final output.
 
 ###### Bold And Italic
 
@@ -34,23 +48,29 @@ Use `_` chars around the word, phrase or sentence for _italic_.
 
 ###### Links
 
-Links are supported via this syntax `$link[text](url)`.
+Links are supported via this syntax `@link[text](url)`.
 
 Remember that the text can't contain any bold or italics or other links.
-To make a link bold(/italic) wrap the bold(/italic) chars around the whole link syntax.
+To make a link bold/italic wrap the bold/italic chars around the whole link syntax.
 
 ###### Ordered & Unordered Lists
 
-To start **Unordered Lists** you first have to start an unordered list block with `$ul[` and in the next line use **Unordered List Item** syntax; at the end of unordered list block you need to close it via a `]`.
+**Unordered Lists** are available as **Block Function** just use `#ul[` and in a newline use **Unordered List Item** syntax; close the **Unordered List Block Function** with `]`
+
 **Unordered List Item** start with usual `-` and a space is necessary after the hyphen(-). Unordered list items only span a single line and a newline is necessary after one.
 
-To start **Ordered Lists** you first have to start an ordered list block with `$ol[` and in the next line use numbers and a period(.) followed by a space to start a ordered list item. They too span a single line. At the end of the ordered list there must be a closing `]`.
+Similarly an **Ordered List Block Function** looks like `#ol[\n...\n]`.
+The `newline` chars are not typos.
+
+**Ordered List Item** start with numbers followed by a dot(`.`) and a space. You can use any whole number and proper numbering will be assigned by `zm` compiler.
 
 Both **Unordered & Ordered List Items** are nestable and you can mix Unordered and Ordered List Items. But remember that in the following example (though it is discouraged to write something like this, but still it's a feature)
 
 ```md
+#ul[
 - Item 1
 1. Item 2
+]
 ```
 
 `Item 1` will have a order number 1 and `Item 2` will have order number 2. (Yes even unordered lists have order numbers but they are not shown, unless you write some custom js code in the generated HTML file).
@@ -79,24 +99,29 @@ Nested variables and lists can be indexed via dot(`.`) syntax like this `{ some_
 
 ###### Blockquote
 
-`Blockquote`s in `zm` is very different to markdown. `Blockquote`s in `zm` markup produce a `<blockquote>` tag in the resulting HTML.
+**Blockquotes** in `zm` are just used for quotations.
 
 The syntax is similar to markdown, though. Just use `>` followed by a space.
 
 >[!note]
-> Nested `blockquote`s are not supported as it is weird to have nested `<blockquote>` tags in HTML.
+> Nested `blockquote`s are not supported as it is weird to have nested quotations.
 
 ###### Separator
 
 Separators are only to be used as thematic breaks or [scene breaks](https://en.wikipedia.org/wiki/Section_(typography)).
 
-It is a block function, syntax is `$sep`.
+It is a block function, syntax is `#sep`.
 
 
 ## Usage
 
-Currently this program does not produce any `.html` or any other file.
-It just parses and renders(or converts) the provided `zm` file to HTML and prints the output to **stdout**.
+`zm` executable either prints its output to `stdout` or a file provided by the user.
+
+Run it with `-o`/`--output` `<file_name>` to write to a file.
+
+If you want to print to `stdout`, pass the `-s`/`--stdout` flag.
+
+In both the cases an input file must be provided which contains proper `zm` markup.
 
 
 ## License

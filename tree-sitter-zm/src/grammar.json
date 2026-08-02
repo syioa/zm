@@ -108,7 +108,11 @@
           "members": [
             {
               "type": "PATTERN",
-              "value": "[^\\n\\\\\\#\\*\\_\\$\\{>]+"
+              "value": "[^\\n\\\\\\#\\*\\_\\@\\{>]+"
+            },
+            {
+              "type": "PATTERN",
+              "value": "\\@ "
             },
             {
               "type": "SEQ",
@@ -313,7 +317,7 @@
       "members": [
         {
           "type": "STRING",
-          "value": "$link"
+          "value": "@link"
         },
         {
           "type": "STRING",
@@ -387,7 +391,7 @@
           "type": "TOKEN",
           "content": {
             "type": "PATTERN",
-            "value": "\\$ul\\[\\n"
+            "value": "\\#ul\\[\\n"
           }
         },
         {
@@ -472,7 +476,7 @@
           "type": "TOKEN",
           "content": {
             "type": "PATTERN",
-            "value": "\\$ol\\[\\n"
+            "value": "\\#ol\\[\\n"
           }
         },
         {
@@ -581,7 +585,7 @@
     },
     "sep": {
       "type": "PATTERN",
-      "value": "\\$sep"
+      "value": "\\#sep"
     },
     "newline": {
       "type": "STRING",

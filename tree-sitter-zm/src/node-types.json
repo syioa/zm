@@ -324,15 +324,15 @@
     "fields": {}
   },
   {
-    "type": "$link",
-    "named": false
-  },
-  {
     "type": ")",
     "named": false
   },
   {
     "type": "*",
+    "named": false
+  },
+  {
+    "type": "@link",
     "named": false
   },
   {
