@@ -133,4 +133,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) for parsing the `zm` syntax.
 - [KDL and its Community](https://kdl.dev/) for the frontmatter.
+- [Catppuccin](https://catppuccin.com/) for amazing color palette.
 
