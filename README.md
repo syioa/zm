@@ -86,9 +86,11 @@ The syntax is similar to markdown, though. Just use `>` followed by a space.
 >[!note]
 > Nested `blockquote`s are not supported as it is weird to have nested `<blockquote>` tags in HTML.
 
-###### Horizontal Rule
+###### Separator
 
-Taking inspiration from markdown the `horizontal rule` or a `divider` syntax is like `$---`. Also remember that `zm` is strict about the number of hyphens used in the `horizontal rule` and it is necessary to have only 3 hyphens. Newline is necessary at the end.
+Separators are only to be used as thematic breaks or [scene breaks](https://en.wikipedia.org/wiki/Section_(typography)).
+
+It is a block function, syntax is `$sep`.
 
 
 ## Usage

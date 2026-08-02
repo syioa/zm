@@ -21,7 +21,7 @@ pub const SymbolKind = enum {
     paragraph,
     variable,
     blockquote,
-    hr,
+    sep,
 
     unknown,
 };
@@ -54,7 +54,7 @@ pub const Symbols = struct {
 
     blockquote: u16,
 
-    hr: u16,
+    sep: u16,
 
     pub fn init(lang: *const ts.Language) Symbols {
         return .{
@@ -85,7 +85,7 @@ pub const Symbols = struct {
 
             .blockquote = lang.idForNodeKind("blockquote", true),
 
-            .hr = lang.idForNodeKind("hr", true),
+            .sep = lang.idForNodeKind("sep", true),
         };
     }
 
@@ -124,8 +124,8 @@ pub const Symbols = struct {
             return .variable;
         } else if (variant == self.blockquote) {
             return .blockquote;
-        } else if (variant == self.hr) {
-            return .hr;
+        } else if (variant == self.sep) {
+            return .sep;
         } else {
             return .unknown;
         }

@@ -67,7 +67,10 @@ pub const HTMLRenderer = struct {
 
                 const parent_node = cursor.node();
                 const parent_kind = self.ts_kinds.match(parent_node.kindId());
-                try self.leave(&parent_node, parent_kind); if (cursor.gotoNextSibling()) { found_sibling = true;
+                try self.leave(&parent_node, parent_kind);
+
+                if (cursor.gotoNextSibling()) {
+                    found_sibling = true;
                     break;
                 }
             }
@@ -148,7 +151,7 @@ pub const HTMLRenderer = struct {
                 try self.writer.writeAll("<blockquote>");
                 try self.stack.append(self.allocator, .{ .idx = node.id });
             },
-            .hr => {
+            .sep => {
                 try self.writer.writeAll("<hr>");
             },
             .attr => {},
@@ -227,7 +230,7 @@ pub const HTMLRenderer = struct {
                     _ = self.stack.pop();
                 },
                 .attr => {},
-                .hr => {},
+                .sep => {},
                 .url => {},
                 .heading_marker => {},
                 .newline => {},
@@ -374,7 +377,7 @@ fn writeDocumentOpenContent(writer: *std.Io.Writer, frontmatter: []const u8) !vo
         \\</head>
         \\<body>
     );
-    
+
     try writer.print(
         \\<script id="frontmatter" type="application/kdl">{s}</script>
     , .{frontmatter});
@@ -395,8 +398,7 @@ fn writeDocumentOpenContent(writer: *std.Io.Writer, frontmatter: []const u8) !vo
 }
 
 fn writeDocumentCloseContent(writer: *std.Io.Writer) !void {
-    try writer.writeAll(
-        assets.frontmatter_js ++
+    try writer.writeAll(assets.frontmatter_js ++
         \\</body></html>
     );
 }

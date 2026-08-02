@@ -64,9 +64,9 @@ pub fn findErrorsPos(root: *const ts.Node) void {
 
         if (node.isError() or node.isMissing()) {
             const start = node.startPoint();
-            std.debug.print(
-                "Syntax error at line {d}, column {d} (node kind: \"{s}\")",
-                .{ start.row + 1, start.column + 1, node.kind() },
+            std.log.warn(
+                "Syntax error at line {d}, column {d}",
+                .{ start.row + 1, start.column + 1 },
             );
         }
 

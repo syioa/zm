@@ -81,7 +81,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "hr"
+          "name": "sep"
         }
       ]
     },
@@ -579,9 +579,9 @@
         }
       ]
     },
-    "hr": {
+    "sep": {
       "type": "PATTERN",
-      "value": "\\$---\\n"
+      "value": "\\$sep"
     },
     "newline": {
       "type": "STRING",

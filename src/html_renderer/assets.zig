@@ -7,6 +7,7 @@ pub const css_styles =
     \\:root {
     \\    color-scheme: light dark;
     \\    -webkit-text-size-adjust: 100%;
+    \\
     \\}
     \\
     \\*,
@@ -94,9 +95,9 @@ pub const css_styles =
     \\}
     \\
     \\hr {
-    \\    margin-block: clamp(1.5rem, 4vw, 2.5rem);
+    \\    margin-block: clamp(4rem, 3rem + 2vw, 6rem);
     \\    border: none;
-    \\    height: 2px;
+    \\    height: 1px;
     \\    background: var(--ctp-surface1);
     \\}
 
@@ -406,8 +407,7 @@ pub const css_styles =
     \\h4,
     \\h5,
     \\h6 {
-    \\    margin-block: clamp(1.5rem, 1rem + 1vw, 2.5rem)
-    \\                  clamp(0.75rem, 0.5rem + 0.3vw, 1rem);
+    \\    margin-block: clamp(3rem, 2rem + 2vw, 5rem) clamp(0.8rem, 0.6rem + 0.3vw, 1.1rem);
     \\    font-weight: 700;
     \\    scroll-margin-top: 5rem;
     \\}

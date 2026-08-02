@@ -75,15 +75,15 @@
           "named": true
         },
         {
-          "type": "hr",
-          "named": true
-        },
-        {
           "type": "ordered_list",
           "named": true
         },
         {
           "type": "paragraph",
+          "named": true
+        },
+        {
+          "type": "sep",
           "named": true
         },
         {
@@ -356,7 +356,7 @@
     "named": true
   },
   {
-    "type": "hr",
+    "type": "sep",
     "named": true
   },
   {
