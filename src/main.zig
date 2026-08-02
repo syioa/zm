@@ -24,8 +24,9 @@ fn print_help_message(writer: *std.Io.Writer) !void {
         \\
         \\{s}
         \\    -h, --help             Print help information
-        \\    -o, --output <path>    Print the HTML file
-        \\    -s, --stdout           Print the HTML in stdout
+        \\    -o, --output <path>    Print the generated HTML file
+        \\    -s, --stdout           Print the HTML to stdout
+        \\    -v, --version          Print program version
         \\
     , .{
         build_options.version,
