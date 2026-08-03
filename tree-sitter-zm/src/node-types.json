@@ -8,6 +8,10 @@
       "required": true,
       "types": [
         {
+          "type": "attr",
+          "named": true
+        },
+        {
           "type": "bold",
           "named": true
         },

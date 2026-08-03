@@ -103,8 +103,15 @@ Nested variables and lists can be indexed via dot(`.`) syntax like this `{ some_
 
 The syntax is similar to markdown, though. Just use `>` followed by a space.
 
+If you want to cite the author of the quote just put the name of the author between square brackets(`[]`) in a new line. eg.
+
+```zm
+> Simplicity is the ultimate sophistication.
+[Leonardo da Vinci]
+```
+
 >[!note]
-> Nested `blockquote`s are not supported as it is weird to have nested quotations.
+> Nested `blockquote`s are not supported as it would be weird to have nested quotations.
 
 ###### Separator
 

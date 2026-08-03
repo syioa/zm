@@ -580,6 +580,40 @@
             "type": "SYMBOL",
             "name": "_inline_content"
           }
+        },
+        {
+          "type": "PATTERN",
+          "value": "\\n"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "PATTERN",
+                  "value": "\\["
+                },
+                {
+                  "type": "ALIAS",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "_link_text"
+                  },
+                  "named": true,
+                  "value": "attr"
+                },
+                {
+                  "type": "PATTERN",
+                  "value": "\\]"
+                }
+              ]
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
         }
       ]
     },

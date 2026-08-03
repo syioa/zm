@@ -148,7 +148,7 @@ pub const HTMLRenderer = struct {
                 try self.stack.append(self.allocator, .{ .idx = node.id });
             },
             .blockquote => {
-                try self.writer.writeAll("<blockquote>");
+                try self.writer.writeAll("<blockquote><p>");
                 try self.stack.append(self.allocator, .{ .idx = node.id });
             },
             .sep => {
@@ -226,6 +226,10 @@ pub const HTMLRenderer = struct {
                     _ = self.stack.pop();
                 },
                 .blockquote => {
+                    try self.writer.writeAll("</p>");
+                    if (node.namedChild(1)) |cite_text| {
+                        try self.writer.print("<cite>{s}</cite>", .{self.source[cite_text.startByte()..cite_text.endByte()]});
+                    }
                     try self.writer.writeAll("</blockquote>");
                     _ = self.stack.pop();
                 },

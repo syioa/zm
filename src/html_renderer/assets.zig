@@ -149,10 +149,30 @@ pub const css_styles =
 
     // blockquote
     \\blockquote {
-    \\    font-size: clamp(1.05rem, 1rem + 0.2vw, 1.2rem);
-    \\    line-height: 1.7;
+    \\    margin: 2rem 0;
+    \\    padding-inline-start: 1.25rem;
+    \\    border-inline-start: 0.25rem solid var(--ctp-blue);
+    \\    background: var(--ctp-surface0);
     \\}
-    
+    \\
+    \\blockquote p {
+    \\    margin: 0;
+    \\    font-style: italic;
+    \\}
+    \\
+    \\blockquote cite {
+    \\    display: block;
+    \\    margin-top: 0.25rem;
+    \\    font-style: normal;
+    \\    font-size: 0.9rem;
+    \\    color: var(--ctp-subtext0);
+    \\}
+    \\
+    \\blockquote cite::before {
+    \\    content: "— ";
+    \\    font-size: 0.9rem;
+    \\}
+
     // unordered lists
     \\ul {
     \\    list-style: none;
@@ -296,7 +316,7 @@ pub const css_styles =
     \\        transition: none;
     \\    }
     \\}
-    
+
     // theme switcher
     \\header {
     \\    display: flex;
@@ -420,7 +440,6 @@ pub const css_styles =
     \\table {
     \\    margin-block: clamp(0.9rem, 0.7rem + 0.4vw, 1.4rem);
     \\}
-
     \\</style>
 ;
 

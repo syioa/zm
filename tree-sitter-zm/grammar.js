@@ -137,6 +137,12 @@ export default grammar({
     blockquote: $ => seq(
       /> /,
       repeat1($._inline_content),
+      /\n/,
+      optional(seq(
+        /\[/,
+        alias($._link_text, $.attr),
+        /\]/,
+      ))
     ),
 
     sep: _ => /\#sep/,
