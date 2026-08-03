@@ -7,7 +7,6 @@ pub const css_styles =
     \\:root {
     \\    color-scheme: light dark;
     \\    -webkit-text-size-adjust: 100%;
-    \\
     \\}
     \\
     \\*,
@@ -95,10 +94,10 @@ pub const css_styles =
     \\}
     \\
     \\hr {
+    \\    height: 0;
     \\    margin-block: clamp(4rem, 3rem + 2vw, 6rem);
     \\    border: none;
-    \\    height: 1px;
-    \\    background: var(--ctp-surface1);
+    \\    border-top: 1px solid var(--ctp-surface1);
     \\}
 
     // headings
