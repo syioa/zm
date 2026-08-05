@@ -72,10 +72,17 @@ pub fn main(init: std.process.Init) !void {
         else => unreachable,
     };
 
-    var stdout = std.Io.File.stdout().writer(init.io, &.{});
+    var stdout_buf: [512]u8 = undefined;
+    var stdout = std.Io.File.stdout().writer(init.io, &stdout_buf);
     const stdout_writer = &stdout.interface;
+
+    var stderr_buf: [512]u8 = undefined;
+    var stderr = std.Io.File.stdout().writer(init.io, &stderr_buf);
+    const stderr_writer = &stderr.interface;
+
     if (args.help) {
         try print_help_message(stdout_writer);
+        try stdout_writer.flush();
         return;
     } else if (args.version) {
         try stdout_writer.print("v{s}\n", .{build_options.version});
@@ -120,14 +127,15 @@ pub fn main(init: std.process.Init) !void {
     if (tree.rootNode().hasError()) {
         // TODO: also provide with proper line number where the error occurred
         std.log.err("Syntax Errors in Markup", .{});
-        utils.findErrorsPos(&tree.rootNode());
+        try utils.printError(&tree.rootNode(), source[fm_end..], stderr_writer);
+        try stderr_writer.flush();
         return;
     }
 
     if (args.stdout) {
         var buf: [2048]u8 = undefined;
-        var file_writer = std.Io.File.stdout().writer(init.io, &buf);
-        const writer = &file_writer.interface;
+        var big_stdout_writer = std.Io.File.stdout().writer(init.io, &buf);
+        const writer = &big_stdout_writer.interface;
 
         var render = renderer.HTMLRenderer{
             .allocator = allocator,

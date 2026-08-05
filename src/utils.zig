@@ -2,6 +2,7 @@ const std = @import("std");
 const zm = @import("root.zig");
 const kdl = zm.kdl;
 const ts = zm.tree_sitter;
+const syn_error_reporting = zm.syn_error_reporting;
 
 /// writes the provided string, unescaping the contents
 pub fn writeUnescaped(writer: *std.Io.Writer, escaped_str: []const u8) !void {
@@ -53,33 +54,20 @@ pub fn splitFrontmatter(source: []const u8) !usize {
     return error.UnclosedDelimiter;
 }
 
-pub fn findErrorsPos(root: *const ts.Node) void {
+pub fn printError(root: *const ts.Node, source: []const u8, writer: *std.Io.Writer) !void {
     if (!root.hasError()) return;
 
-    var cursor = root.walk();
-    defer cursor.destroy();
+    if (syn_error_reporting.findFirstError(root)) |node| {
+        const point = node.startPoint();
+        const diagnostic_msg = syn_error_reporting.diagnosticMessage(node);
+        const line = syn_error_reporting.getLineFromByte(source, node.startByte());
 
-    while (true) {
-        const node = cursor.node();
-
-        if (node.isError() or node.isMissing()) {
-            const start = node.startPoint();
-            std.log.warn(
-                "Syntax error at line {d}, column {d}",
-                .{ start.row + 1, start.column + 1 },
-            );
+        try writer.print("{s} on {d}:{d}\n", .{ diagnostic_msg, point.row, point.column });
+        try writer.print("  {s}\n  ", .{line});
+        for (0..point.column) |_| {
+            try writer.writeByte(' ');
         }
-
-        // Only descend into children if this subtree actually has an error
-        if (node.hasError() and cursor.gotoFirstChild()) {
-            continue;
-        }
-
-        // No children (or no error below) -> move to next sibling,
-        // walking back up until we find one or exit the tree
-        while (!cursor.gotoNextSibling()) {
-            if (!cursor.gotoParent()) return; // back at root, done
-        }
+        try writer.writeAll("^\n");
     }
 }
 
